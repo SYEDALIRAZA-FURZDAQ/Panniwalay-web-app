@@ -1,0 +1,780 @@
+<!DOCTYPE html><html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Accounts, Expense Heads &amp; P&amp;L Statement | Panniwalay ERP</title>
+<!-- Google Fonts: Plus Jakarta Sans & Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-container": "#fffbff",
+            "surface-bright": "#faf8ff",
+            "inverse-surface": "#283044",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-container": "#00714d",
+            "on-secondary-fixed": "#002113",
+            "surface-container-low": "#f2f3ff",
+            "tertiary-container": "#a36700",
+            "on-primary-container": "#fdfcff",
+            "surface-dim": "#d2d9f4",
+            "tertiary-fixed": "#ffddb8",
+            "surface-container": "#eaedff",
+            "on-surface": "#131b2e",
+            "tertiary-fixed-dim": "#ffb95f",
+            "surface-container-high": "#e2e7ff",
+            "on-primary": "#ffffff",
+            "on-tertiary-fixed-variant": "#653e00",
+            "tertiary": "#825100",
+            "on-tertiary-fixed": "#2a1700",
+            "on-surface-variant": "#3f4850",
+            "on-primary-fixed-variant": "#004b73",
+            "inverse-on-surface": "#eef0ff",
+            "inverse-primary": "#93ccff",
+            "on-secondary-fixed-variant": "#005236",
+            "secondary-fixed-dim": "#4edea3",
+            "on-error": "#ffffff",
+            "on-secondary": "#ffffff",
+            "surface-tint": "#006398",
+            "on-background": "#131b2e",
+            "primary-container": "#007bb9",
+            "error": "#ba1a1a",
+            "on-error-container": "#93000a",
+            "background": "#faf8ff",
+            "surface-variant": "#dae2fd",
+            "primary-fixed": "#cce5ff",
+            "outline-variant": "#bfc7d2",
+            "secondary": "#006c49",
+            "primary-fixed-dim": "#93ccff",
+            "on-primary-fixed": "#001d31",
+            "error-container": "#ffdad6",
+            "primary": "#006194",
+            "on-tertiary": "#ffffff",
+            "outline": "#707881",
+            "secondary-fixed": "#6ffbbe",
+            "secondary-container": "#6cf8bb",
+            "surface": "#faf8ff",
+            "surface-container-highest": "#dae2fd"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "2rem",
+            "margin": "2rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "gutter-mobile": "0.75rem",
+            "margin-mobile": "1rem",
+            "gutter": "1.5rem",
+            "space-lg": "1.5rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "title-md": ["Inter"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "label-md": ["Inter"],
+            "tabular-data": ["Inter"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "label-sm": ["Inter"],
+            "label-lg": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "display-lg-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "tabular-data": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #bfc7d2;
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  </style>
+</head>
+<body class="h-full bg-surface text-on-surface antialiased overflow-hidden flex">
+<!-- ================= SIDEBAR NAVIGATION (SHARED COMPONENT ANCHOR) ================= -->
+<aside class="fixed top-0 left-0 h-full w-64 flex flex-col justify-between bg-surface border-r border-outline-variant z-30 shrink-0">
+<!-- Top Branding & Navigation Links -->
+<div class="p-4 flex flex-col gap-6">
+<!-- Brand Logo / Info -->
+<div class="flex items-center gap-3 px-1 pt-1">
+<div class="w-10 h-10 rounded-lg overflow-hidden bg-surface-container-low border border-outline-variant shrink-0 flex items-center justify-center shadow-sm">
+<img alt="AquaFlow Pure Water Logistics Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1Xea615WPIGJIcjlLKkQlBuHGoib2OhXVYoA1uFiAXJhh-PZRHpXLbFqqbWHjon-2fjDHIJFKqBOQJMWyxVPRQThlwOc62_sTwDPMHE8DG-kPws-VpWP11co1Rf9GpWwOyV8mJpK_Q8ONjUPVif4-XzxsRdTNEmtW32y-Wi-bJmCko2PRKL-8OyPH1doHlCV9vfmuQC6jLv7UYkGmTzPu9RaVJgV26P8UlXFkca9YpQA4wZGpoM0cAPsG8">
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-md text-headline-sm font-bold text-primary truncate leading-tight">Panniwalay ERP</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">Plant #4 Bottling &amp; Fleet Hub</span>
+</div>
+</div>
+<!-- Navigation Tabs (from Shared Components JSON with semantic active mapping) -->
+<nav class="flex flex-col gap-1">
+<!-- 1. Operations Hub -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Operations Hub</span>
+</a>
+<!-- 2. Route Dispatch -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="local_shipping">local_shipping</span>
+<span class="font-label-md text-label-md">Route Dispatch</span>
+</a>
+<!-- 3. Inventory & Jars -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="water_bottle">water_bottle</span>
+<span class="font-label-md text-label-md">Inventory &amp; Jars</span>
+</a>
+<!-- 4. Customer Accounts -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Customer Accounts</span>
+</a>
+<!-- 5. Billing & Deposits (ACTIVE TAB: matches Accounts & P&L Page) -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-container-high text-primary font-bold active:scale-[0.99] transition-transform duration-100" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="receipt_long" data-weight="fill" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+<span class="font-label-md text-label-md">Billing &amp; Deposits</span>
+</a>
+<!-- 6. Plant Analytics -->
+
+</nav>
+</div>
+<!-- Sidebar Bottom: CTA & Footer Tabs -->
+<div class="p-4 border-t border-outline-variant flex flex-col gap-3">
+<!-- CTA Button from JSON -->
+<button class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors active:scale-95 shadow-none" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="share">share</span>
+<span class="">Share Invite Link</span>
+</button>
+<!-- Footer Tabs from JSON -->
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-primary font-label-md text-label-md transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+<span class="">System Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-primary font-label-md text-label-md transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+<span class="">Support Desk</span>
+</a>
+</div>
+<!-- Live Connection Pill -->
+<div class="mt-1 px-3 py-2 rounded-lg bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Plant Sensor Synced</span>
+</div>
+<span class="font-tabular-data text-body-sm text-on-surface-variant font-medium">99.9%</span>
+</div>
+</div>
+</aside>
+<!-- ================= MAIN CONTENT WRAPPER ================= -->
+<div class="ml-64 flex-1 flex flex-col h-screen overflow-hidden">
+<!-- ================= TOP APP BAR (SHARED COMPONENT ANCHOR) ================= -->
+<header class="sticky top-0 z-20 w-full bg-surface border-b border-outline-variant shadow-sm shrink-0">
+<div class="flex justify-between items-center h-16 px-6 w-full">
+<!-- Left: Search & Navigation Links -->
+<div class="flex items-center gap-6">
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[18px]" data-icon="search">search</span>
+<input class="w-full pl-9 pr-4 py-1.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Search ledger voucher, head, rider..." type="text">
+</div>
+<!-- Top Navigation Links from JSON -->
+<nav class="hidden xl:flex items-center gap-5">
+<a class="font-label-md text-on-surface-variant hover:text-on-surface pb-1 transition-colors" href="#">Live Routes</a>
+<a class="font-label-md text-on-surface-variant hover:text-on-surface pb-1 transition-colors" href="#">Tank Status</a>
+<a class="font-label-md text-on-surface-variant hover:text-on-surface pb-1 transition-colors" href="#">Empty Bottle Reconciliation</a>
+<a class="font-label-md text-primary font-bold border-b-2 border-primary pb-1" href="#">Accounts &amp; P&amp;L</a>
+</nav>
+</div>
+<!-- Right: Actions & User Avatar -->
+<div class="flex items-center gap-3">
+<!-- Fiscal Period Selector -->
+<div class="relative">
+<select class="appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg pl-3 pr-8 py-1.5 font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors focus:ring-1 focus:ring-primary cursor-pointer">
+<option selected="">Current Month - October 2024</option>
+<option>Q3 2024 (Jul - Sep)</option>
+<option>YTD (Fiscal 2024-25)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-2.5 pointer-events-none text-on-surface-variant text-[16px]" data-icon="expand_more">expand_more</span>
+</div>
+<!-- Secondary Action: Download Audit -->
+<button class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors active:scale-95 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="download">download</span>
+<span class="">Audit (PDF/CSV)</span>
+</button>
+<!-- Primary Action: + Record Expense -->
+<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-semibold transition-colors shadow-sm active:scale-95" onclick="document.getElementById('quick-expense-form').scrollIntoView({ behavior: 'smooth' });" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+<span class="">+ Record Expense</span>
+</button>
+<!-- Trailing Icon Actions from JSON -->
+<div class="flex items-center border-l border-outline-variant pl-3 ml-1 gap-1">
+<button class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-lg transition-colors relative" title="Notifications">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface"></span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-lg transition-colors" title="Scan QR Lot / Voucher">
+<span class="material-symbols-outlined text-[20px]" data-icon="qr_code_scanner">qr_code_scanner</span>
+</button>
+</div>
+<!-- Profile Badge -->
+<div class="flex items-center gap-2 pl-2 border-l border-outline-variant">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed font-bold font-label-md ring-1 ring-primary/20" title="Fleet Dispatcher Operations Lead">
+              FD
+            </div>
+</div>
+</div>
+</div>
+</header>
+<!-- ================= SCROLLABLE DASHBOARD CANVAS ================= -->
+<main class="flex-1 overflow-y-auto custom-scroll p-6 lg:p-8 space-y-6">
+<!-- ================= HEADER SECTION ================= -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-outline-variant">
+<div>
+<div class="flex items-center gap-2.5">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Accounts &amp; Profit and Loss (P&amp;L) Ledger</h1>
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed/40 text-secondary font-label-sm text-label-sm border border-secondary/20 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Live Plant Inflows
+            </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 max-w-4xl">
+            Track automated revenue inflows from jar sales, manage operational expense heads (Rent, Utilities, Salaries), and monitor net operating margin.
+          </p>
+</div>
+<div class="flex items-center gap-2 self-start md:self-auto">
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-2.5 py-1 rounded-md">
+            Fiscal Code: <strong class="text-on-surface">PK-KHI-04</strong>
+</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-2.5 py-1 rounded-md">
+            Currency: <strong class="text-on-surface">PKR (₨)</strong>
+</span>
+</div>
+</div>
+<!-- ================= TOP FINANCIAL METRICS CARDS (4-COL GRID) ================= -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- 1. Total Revenue -->
+<div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant shadow-sm flex flex-col justify-between hover:border-outline transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Total Revenue (Auto Inflow)</span>
+<div class="w-8 h-8 rounded-lg bg-primary-fixed/60 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]" data-icon="water_drop">water_drop</span>
+</div>
+</div>
+<div class="mt-3">
+<div class="font-display-lg text-headline-lg font-bold text-on-surface font-tabular-data">
+              PKR 2,840,500
+            </div>
+<div class="mt-1 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-secondary font-semibold flex items-center">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span> +18.4%
+              </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">vs last month (live jar sales)</span>
+</div>
+</div>
+</div>
+<!-- 2. Total Operating Expenses -->
+<div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant shadow-sm flex flex-col justify-between hover:border-outline transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Total Operating Expenses (OpEx)</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[18px]" data-icon="payments">payments</span>
+</div>
+</div>
+<div class="mt-3">
+<div class="font-display-lg text-headline-lg font-bold text-on-surface font-tabular-data">
+              PKR 1,625,000
+            </div>
+<div class="mt-1 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Rent, power, RO, fuel &amp; payroll</span>
+</div>
+</div>
+</div>
+<!-- 3. Net Operating Profit -->
+<div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant shadow-sm flex flex-col justify-between hover:border-outline transition-colors bg-gradient-to-br from-white to-secondary-container/10">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-secondary font-bold">Net Operating Profit</span>
+<div class="w-8 h-8 rounded-lg bg-secondary-container/50 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]" data-icon="verified">verified</span>
+</div>
+</div>
+<div class="mt-3">
+<div class="font-display-lg text-headline-lg font-bold text-secondary font-tabular-data">
+              PKR 1,215,500
+            </div>
+<div class="mt-1 flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold">
+                42.8% Net Margin
+              </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Post OpEx</span>
+</div>
+</div>
+</div>
+<!-- 4. Pending Receivables / Driver Cash -->
+<div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant shadow-sm flex flex-col justify-between hover:border-outline transition-colors">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant">Pending Route Cash</span>
+<div class="w-8 h-8 rounded-lg bg-tertiary-fixed/50 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[18px]" data-icon="local_atm">local_atm</span>
+</div>
+</div>
+<div class="mt-3">
+<div class="font-display-lg text-headline-lg font-bold text-on-surface font-tabular-data">
+              PKR 184,200
+            </div>
+<div class="mt-1 flex items-center gap-1.5">
+<span class="font-label-sm text-label-sm text-tertiary font-semibold flex items-center">
+<span class="material-symbols-outlined text-[14px]" data-icon="route">route</span> 8 active runs
+              </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">unreconciled COD</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= TWO-COLUMN CORE FINANCIAL WORKBENCH ================= -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- ================= LEFT COLUMN: INTERACTIVE P&L STATEMENT (7 COLS) ================= -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden flex flex-col">
+<!-- Card Header -->
+<div class="px-6 py-4 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]" data-icon="account_balance">account_balance</span>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Interactive Profit &amp; Loss (P&amp;L) Statement</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Financial breakdown for October 2024 (Consolidated Bottling Plant)</p>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-md bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">
+              EBITDA View
+            </span>
+</div>
+<div class="p-6 space-y-6">
+<!-- SECTION 1: REVENUE BREAKDOWN -->
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/60">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="sync_alt">sync_alt</span>
+<h3 class="font-title-md text-title-md text-on-surface">Revenue Breakdown (Automated from Sales)</h3>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Live POS Influx</span>
+</div>
+<div class="mt-2 divide-y divide-outline-variant/40">
+<div class="py-2.5 flex items-center justify-between text-body-md">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-on-surface font-medium">20L Polycarbonate Bottle Refills</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">10,700 refills</span>
+</div>
+<span class="font-tabular-data text-tabular-data text-on-surface font-semibold">PKR 2,140,000</span>
+</div>
+<div class="py-2.5 flex items-center justify-between text-body-md">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-primary/70"></span>
+<span class="text-on-surface font-medium">10L Canisters &amp; Disposable Packs</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">1,522 units</span>
+</div>
+<span class="font-tabular-data text-tabular-data text-on-surface font-semibold">PKR 380,500</span>
+</div>
+<div class="py-2.5 flex items-center justify-between text-body-md">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-primary/50"></span>
+<span class="text-on-surface font-medium">Hot &amp; Cold Dispenser Leases / Sales</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">22 corporate leases</span>
+</div>
+<span class="font-tabular-data text-tabular-data text-on-surface font-semibold">PKR 220,000</span>
+</div>
+<div class="py-2.5 flex items-center justify-between text-body-md">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-primary/30"></span>
+<span class="text-on-surface font-medium">Manual Pumps &amp; Accessories</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">125 sets</span>
+</div>
+<span class="font-tabular-data text-tabular-data text-on-surface font-semibold">PKR 100,000</span>
+</div>
+<!-- Subtotal Revenue -->
+<div class="pt-3 flex items-center justify-between font-title-md bg-surface-container-low/60 px-3 py-2 rounded-lg mt-1">
+<span class="text-primary font-bold">Gross Sales Revenue</span>
+<span class="font-tabular-data text-title-md text-primary font-bold">PKR 2,840,500</span>
+</div>
+</div>
+</div>
+<!-- SECTION 2: COST OF GOODS SOLD (COGS) -->
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/60">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="inventory">inventory</span>
+<h3 class="font-title-md text-title-md text-on-surface">Cost of Goods Sold (COGS)</h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Direct Production</span>
+</div>
+<div class="mt-2 divide-y divide-outline-variant/40">
+<div class="py-2.5 flex items-center justify-between text-body-md">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="text-on-surface font-medium">Pre-filtration &amp; Mineral Salts / RO Power</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">(TDS 140 mg/L baseline)</span>
+</div>
+<span class="font-tabular-data text-tabular-data text-error font-medium">(PKR 310,000)</span>
+</div>
+<div class="py-2.5 flex items-center justify-between text-body-md">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="text-on-surface font-medium">Caps, Tamper Seals &amp; Sleeves</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">(12,222 seal batches)</span>
+</div>
+<span class="font-tabular-data text-tabular-data text-error font-medium">(PKR 145,000)</span>
+</div>
+<!-- Gross Profit Row -->
+<div class="pt-3 flex items-center justify-between font-title-md bg-secondary-fixed/20 border border-secondary/20 px-3 py-2 rounded-lg mt-1">
+<div class="flex items-center gap-2">
+<span class="text-secondary font-bold">Gross Profit</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm font-semibold">84.0%</span>
+</div>
+<span class="font-tabular-data text-title-md text-secondary font-bold">PKR 2,385,500</span>
+</div>
+</div>
+</div>
+<!-- SECTION 3: OPERATING EXPENSES (OPEX) -->
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/60">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="tune">tune</span>
+<h3 class="font-title-md text-title-md text-on-surface">Operating Expenses by Expense Head</h3>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Admin Controlled</span>
+</div>
+<div class="mt-2 divide-y divide-outline-variant/40">
+<div class="py-2.5 flex items-center justify-between text-body-md">
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm bg-surface-container-high text-on-surface font-semibold px-2 py-0.5 rounded w-32 text-center">Facility Lease</span>
+<span class="text-on-surface font-medium">Plant &amp; Warehouse Rent</span>
+</div>
+<span class="font-tabular-data text-tabular-data text-on-surface font-semibold">PKR 450,000</span>
+</div>
+<div class="py-2.5 flex items-center justify-between text-body-md">
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm bg-surface-container-high text-on-surface font-semibold px-2 py-0.5 rounded w-32 text-center">Utilities</span>
+<span class="text-on-surface font-medium">Commercial Electricity &amp; K-Electric / WAPDA</span>
+</div>
+<span class="font-tabular-data text-tabular-data text-on-surface font-semibold">PKR 385,000</span>
+</div>
+<div class="py-2.5 flex items-center justify-between text-body-md">
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm bg-surface-container-high text-on-surface font-semibold px-2 py-0.5 rounded w-32 text-center">Payroll &amp; Comm.</span>
+<span class="text-on-surface font-medium">Rider &amp; Plant Staff Salaries</span>
+</div>
+<span class="font-tabular-data text-tabular-data text-on-surface font-semibold">PKR 520,000</span>
+</div>
+<div class="py-2.5 flex items-center justify-between text-body-md">
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm bg-surface-container-high text-on-surface font-semibold px-2 py-0.5 rounded w-32 text-center">Logistics &amp; Fuel</span>
+<span class="text-on-surface font-medium">Fleet Fuel &amp; Van Maintenance</span>
+</div>
+<span class="font-tabular-data text-tabular-data text-on-surface font-semibold">PKR 190,000</span>
+</div>
+<div class="py-2.5 flex items-center justify-between text-body-md">
+<div class="flex items-center gap-3">
+<span class="font-label-sm text-label-sm bg-surface-container-high text-on-surface font-semibold px-2 py-0.5 rounded w-32 text-center">Quality &amp; QA</span>
+<span class="text-on-surface font-medium">Water Testing Laboratory QA &amp; Consumables</span>
+</div>
+<span class="font-tabular-data text-tabular-data text-on-surface font-semibold">PKR 80,000</span>
+</div>
+<!-- Subtotal OpEx -->
+<div class="pt-3 flex items-center justify-between font-title-md bg-surface-container-low/60 px-3 py-2 rounded-lg mt-1">
+<span class="text-on-surface font-bold">Total Operating Expenses (OpEx)</span>
+<span class="font-tabular-data text-title-md text-error font-bold">PKR 1,625,000</span>
+</div>
+</div>
+</div>
+<!-- SECTION 4: NET OPERATING PROFIT BANNER -->
+<div class="rounded-xl p-4 bg-secondary/10 border-2 border-secondary/30 flex items-center justify-between">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">Bottom Line Statement</span>
+<div class="font-headline-md text-headline-md text-secondary font-extrabold mt-0.5">
+                  Net Operating Profit
+                </div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+                  EBITDA Margin: <strong class="text-secondary">42.8%</strong> • Cleared to Retained Earnings
+                </div>
+</div>
+<div class="text-right">
+<div class="font-display-lg text-display-lg text-secondary font-extrabold font-tabular-data">
+                  PKR 1,215,500
+                </div>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary font-semibold">
+<span class="material-symbols-outlined text-[16px]" data-icon="check_circle">check_circle</span> Audited for Tax Prep
+                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= RIGHT COLUMN: EXPENSE HEAD MANAGER & RECENT LEDGER (5 COLS) ================= -->
+<div class="lg:col-span-5 space-y-6">
+<!-- CARD 1: ADD QUICK EXPENSE ENTRY FORM -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden" id="quick-expense-form">
+<div class="px-5 py-3.5 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="post_add">post_add</span>
+<h3 class="font-headline-sm text-title-md text-on-surface font-bold">Record Expense Voucher</h3>
+</div>
+<span class="font-label-sm text-label-sm bg-primary-fixed text-on-primary-fixed px-2 py-0.5 rounded font-semibold">New Entry</span>
+</div>
+<form class="p-5 space-y-4" onsubmit="event.preventDefault(); alert('Expense voucher recorded successfully!');">
+<!-- Expense Head Selection -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Select Expense Head *</label>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-body-md text-on-surface appearance-none focus:ring-2 focus:ring-primary focus:border-transparent" required="">
+<option disabled="" selected="" value="">Select registered expense category...</option>
+<option value="rent">Plant &amp; Warehouse Rent [Facility Lease]</option>
+<option value="generator">Commercial Power &amp; Generator Diesel [Utilities]</option>
+<option value="payroll">Driver &amp; Plant Staff Salaries [Payroll]</option>
+<option value="fuel">Fleet Van Fuel &amp; Maintenance [Logistics]</option>
+<option value="membrane">RO Membrane Replacement &amp; Filter Media [Capex/Maint]</option>
+<option value="qa">Microbiological Water QA Lab Testing [Quality]</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 pointer-events-none text-on-surface-variant text-[18px]" data-icon="arrow_drop_down">arrow_drop_down</span>
+</div>
+</div>
+<!-- Two Column Input: Amount & Payment Source -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Amount (PKR) *</label>
+<div class="relative">
+<span class="absolute left-3 top-2 font-tabular-data text-body-sm text-outline">₨</span>
+<input class="w-full pl-8 pr-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-tabular-data text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="0.00" required="" type="number">
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Payment Account *</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent" required="">
+<option selected="">Bank Al Habib - Plant #4</option>
+<option>Cash in Hand (Dispatcher Safe)</option>
+<option>Petty Cash (Driver Floats)</option>
+</select>
+</div>
+</div>
+<!-- Date & Voucher Reference -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Expense Date *</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent" type="date" value="2024-10-24">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Paid To / Vendor</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-body-md text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="e.g. PSO Petrol Station" type="text">
+</div>
+</div>
+<!-- Upload Voucher & Tax Deduction Note -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Attach Receipt / Invoice Voucher</label>
+<div class="border-2 border-dashed border-outline-variant rounded-lg p-3 text-center bg-surface-container-low/40 hover:bg-surface-container-low transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-outline text-[24px]" data-icon="cloud_upload">cloud_upload</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+<span class="text-primary font-semibold">Click to upload</span> or drag paper receipt PDF / JPG
+                  </p>
+</div>
+</div>
+<!-- Tax & Notes -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1">Tax Deduction / Internal Note</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-1.5 font-body-md text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="FBR WHT 4.5% deducted / Oct Diesel batch receipt #890" type="text">
+</div>
+<!-- Form Buttons -->
+<div class="pt-2 flex items-center justify-end gap-3">
+<button class="px-3.5 py-2 rounded-lg border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container-low transition-colors" type="reset">
+                  Clear
+                </button>
+<button class="px-4 py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-semibold transition-colors flex items-center gap-1.5 shadow-sm active:scale-95" type="submit">
+<span class="material-symbols-outlined text-[18px]" data-icon="save">save</span>
+<span class="">Commit to P&amp;L Ledger</span>
+</button>
+</div>
+</form>
+</div>
+<!-- CARD 2: RECENT EXPENSE LEDGER ENTRIES -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="px-5 py-3.5 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="history">history</span>
+<h3 class="font-headline-sm text-title-md text-on-surface font-bold">Recent Expense Ledger</h3>
+</div>
+<button class="font-label-sm text-label-sm text-primary hover:underline font-semibold">View All Vouchers</button>
+</div>
+<!-- Ledger Entries List -->
+<div class="divide-y divide-outline-variant">
+<!-- Item 1 -->
+<div class="p-3.5 hover:bg-surface-container-low/50 transition-colors flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="local_gas_station">local_gas_station</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-label-md text-body-md text-on-surface font-semibold">PSO Fleet Fuel Bulk</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-[10px] font-bold">
+                        Approved
+                      </span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2 mt-0.5">
+<span class="">VCH-2024-891</span> • <span class="">Oct 23, 2024</span> • <span class="">PSO Korangi</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<span class="font-tabular-data text-body-md font-bold text-on-surface block">PKR 34,500</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Logistics &amp; Fuel</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="p-3.5 hover:bg-surface-container-low/50 transition-colors flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="science">science</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-label-md text-body-md text-on-surface font-semibold">PCSIR Water Testing Kit</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-[10px] font-bold">
+                        Approved
+                      </span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2 mt-0.5">
+<span class="">VCH-2024-889</span> • <span class="">Oct 21, 2024</span> • <span class="">PCSIR Labs</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<span class="font-tabular-data text-body-md font-bold text-on-surface block">PKR 22,000</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Quality &amp; QA</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="p-3.5 hover:bg-surface-container-low/50 transition-colors flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="bolt">bolt</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-label-md text-body-md text-on-surface font-semibold">K-Electric Tariff Billing</span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-tertiary font-label-sm text-[10px] font-bold">
+                        Pending Admin Review
+                      </span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2 mt-0.5">
+<span class="">VCH-2024-884</span> • <span class="">Oct 19, 2024</span> • <span class="">KE Bill #9011</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<span class="font-tabular-data text-body-md font-bold text-on-surface block">PKR 185,000</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Utilities</span>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="p-3.5 hover:bg-surface-container-low/50 transition-colors flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface shrink-0">
+<span class="material-symbols-outlined text-[18px]" data-icon="filter_alt">filter_alt</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-label-md text-body-md text-on-surface font-semibold">Hydranautics RO Cartridge</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-[10px] font-bold">
+                        Approved
+                      </span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2 mt-0.5">
+<span class="">VCH-2024-878</span> • <span class="">Oct 16, 2024</span> • <span class="">Apex Tech Supplies</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<span class="font-tabular-data text-body-md font-bold text-on-surface block">PKR 65,000</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Plant Maintenance</span>
+</div>
+</div>
+</div>
+<!-- Card Footer Quick Add Head Trigger -->
+<div class="p-3.5 bg-surface-container-low border-t border-outline-variant flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Need another budget category?</span>
+<button class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-bold hover:underline" onclick="alert('Configure new Expense Head schema modal initialized.');" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="settings_suggest">settings_suggest</span>
+<span class="">Configure Account Heads</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= RECONCILIATION SUMMARY FOOTER BANNER ================= -->
+<footer class="mt-6 p-4 rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary-fixed/50 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="shield_lock">shield_lock</span>
+</div>
+<div>
+<span class="font-label-md text-label-md font-bold text-on-surface">Panniwalay Automated Ledger Integrity Guarantee</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Every sales PKR inflow is tied to an RFID 20L bottle scan, QR receipt or dispenser lease voucher. Total reconciled bottle units: <strong>12,222 jars</strong> this period.
+            </p>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<button class="px-3.5 py-1.5 rounded-lg border border-outline-variant font-label-md text-label-md text-on-surface hover:bg-surface-container-low transition-colors" type="button">
+            Export General Ledger
+          </button>
+<button class="px-3.5 py-1.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-semibold transition-colors shadow-sm" type="button">
+            Lock Fiscal Month
+          </button>
+</div>
+</footer>
+</main>
+</div>
+
+
+</body></html>

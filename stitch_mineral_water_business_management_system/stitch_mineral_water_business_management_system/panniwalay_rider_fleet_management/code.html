@@ -1,0 +1,1047 @@
+<!DOCTYPE html><html class="h-full bg-background text-on-surface" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Panniwalay ERP - Rider &amp; Fleet Management</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts: Plus Jakarta Sans & Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-container": "#fffbff",
+            "surface-bright": "#faf8ff",
+            "inverse-surface": "#283044",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-container": "#00714d",
+            "on-secondary-fixed": "#002113",
+            "surface-container-low": "#f2f3ff",
+            "tertiary-container": "#a36700",
+            "on-primary-container": "#fdfcff",
+            "surface-dim": "#d2d9f4",
+            "tertiary-fixed": "#ffddb8",
+            "surface-container": "#eaedff",
+            "on-surface": "#131b2e",
+            "tertiary-fixed-dim": "#ffb95f",
+            "surface-container-high": "#e2e7ff",
+            "on-primary": "#ffffff",
+            "on-tertiary-fixed-variant": "#653e00",
+            "tertiary": "#825100",
+            "on-tertiary-fixed": "#2a1700",
+            "on-surface-variant": "#3f4850",
+            "on-primary-fixed-variant": "#004b73",
+            "inverse-on-surface": "#eef0ff",
+            "inverse-primary": "#93ccff",
+            "on-secondary-fixed-variant": "#005236",
+            "secondary-fixed-dim": "#4edea3",
+            "on-error": "#ffffff",
+            "on-secondary": "#ffffff",
+            "surface-tint": "#006398",
+            "on-background": "#131b2e",
+            "primary-container": "#007bb9",
+            "error": "#ba1a1a",
+            "on-error-container": "#93000a",
+            "background": "#faf8ff",
+            "surface-variant": "#dae2fd",
+            "primary-fixed": "#cce5ff",
+            "outline-variant": "#bfc7d2",
+            "secondary": "#006c49",
+            "primary-fixed-dim": "#93ccff",
+            "on-primary-fixed": "#001d31",
+            "error-container": "#ffdad6",
+            "primary": "#006194",
+            "on-tertiary": "#ffffff",
+            "outline": "#707881",
+            "secondary-fixed": "#6ffbbe",
+            "secondary-container": "#6cf8bb",
+            "surface": "#faf8ff",
+            "surface-container-highest": "#dae2fd"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "2rem",
+            "margin": "2rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "gutter-mobile": "0.75rem",
+            "margin-mobile": "1rem",
+            "gutter": "1.5rem",
+            "space-lg": "1.5rem",
+            "space-xs": "0.25rem"
+          },
+          "fontFamily": {
+            "headline-lg-mobile": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "title-md": ["Inter"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "label-md": ["Inter"],
+            "tabular-data": ["Inter"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "label-sm": ["Inter"],
+            "label-lg": ["Inter"],
+            "headline-sm": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "display-lg-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "tabular-data": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-full flex overflow-hidden bg-background antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- ========================================================= -->
+<!-- 1. GLOBAL LEFT SIDEBAR (Shared Component: SideNavBar)     -->
+<!-- ========================================================= -->
+<aside class="fixed top-0 left-0 h-full w-64 flex flex-col justify-between bg-surface border-r border-outline-variant shadow-none z-30 shrink-0">
+<!-- Brand / Header Section -->
+<div class="p-4">
+<div class="flex items-center gap-3 px-2 py-3 mb-4 rounded-xl bg-surface-container-low border border-outline-variant/40">
+<img alt="AquaFlow Pure Water Logistics Logo" class="w-10 h-10 rounded-lg object-contain bg-surface-container-lowest p-1 shadow-sm shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1Xea615WPIGJIcjlLKkQlBuHGoib2OhXVYoA1uFiAXJhh-PZRHpXLbFqqbWHjon-2fjDHIJFKqBOQJMWyxVPRQThlwOc62_sTwDPMHE8DG-kPws-VpWP11co1Rf9GpWwOyV8mJpK_Q8ONjUPVif4-XzxsRdTNEmtW32y-Wi-bJmCko2PRKL-8OyPH1doHlCV9vfmuQC6jLv7UYkGmTzPu9RaVJgV26P8UlXFkca9YpQA4wZGpoM0cAPsG8">
+<div class="overflow-hidden">
+<div class="font-headline-sm text-headline-sm font-bold text-primary truncate leading-tight">AquaFlow ERP</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant truncate">Plant #4 Bottling &amp; Fleet Hub</div>
+</div>
+</div>
+<!-- Navigation Tabs (Exact Tab Labels & Icons from JSON, Route Dispatch active) -->
+<nav aria-label="Main Navigation" class="space-y-1.5">
+<!-- Tab 1: Operations Hub -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low hover:text-primary transition-colors duration-150 active:scale-[0.99] font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard">dashboard</span>
+<span class="">Operations Hub</span>
+</a>
+<!-- Tab 2: Route Dispatch (Active as requested for Rider & Fleet Management) -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-surface-container-high text-primary font-bold hover:bg-surface-container-low hover:text-primary transition-colors duration-150 active:scale-[0.99] font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="local_shipping" data-weight="fill" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+<span class="">Route Dispatch</span>
+<span class="ml-auto inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-primary text-on-primary">12 LIVE</span>
+</a>
+<!-- Tab 3: Inventory & Jars -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low hover:text-primary transition-colors duration-150 active:scale-[0.99] font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="water_bottle">water_bottle</span>
+<span class="">Inventory &amp; Jars</span>
+</a>
+<!-- Tab 4: Customer Accounts -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low hover:text-primary transition-colors duration-150 active:scale-[0.99] font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="group">group</span>
+<span class="">Customer Accounts</span>
+</a>
+<!-- Tab 5: Billing & Deposits -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low hover:text-primary transition-colors duration-150 active:scale-[0.99] font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="receipt_long">receipt_long</span>
+<span class="">Billing &amp; Deposits</span>
+</a>
+<!-- Tab 6: Plant Analytics -->
+
+</nav>
+</div>
+<!-- Sidebar Bottom Action & Settings -->
+<div class="p-4 border-t border-outline-variant/60 bg-surface">
+<!-- CTA from JSON: Share Invite Link -->
+<button class="w-full mb-3 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-surface-container text-primary font-label-md text-label-md border border-outline-variant/70 hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[18px]" data-icon="share">share</span>
+<span class="">Share Invite Link</span>
+</button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+<span class="">System Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors duration-150 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="help">help</span>
+<span class="">Support Desk</span>
+</a>
+</div>
+<!-- Water Operations Health Indicator -->
+<div class="mt-4 pt-3 border-t border-outline-variant/40 flex items-center justify-between text-[11px] font-label-sm text-on-surface-variant">
+<span class="inline-flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+          RO Filling Bay: Normal
+        </span>
+<span class="font-tabular-data text-tabular-data text-primary font-bold">99.8% Purity</span>
+</div>
+</div>
+</aside>
+<!-- ========================================================= -->
+<!-- 2. MAIN VIEW CANVAS (Header + TopBar + Scrollable Body)    -->
+<!-- ========================================================= -->
+<div class="flex-1 ml-64 flex flex-col h-screen overflow-hidden bg-background">
+<!-- Top Operations Bar (Shared Component: TopNavBar with rider search & action extensions) -->
+<header class="sticky top-0 z-20 w-full bg-surface border-b border-outline-variant shadow-sm shrink-0">
+<div class="flex justify-between items-center h-16 px-6 w-full">
+<!-- Search Bar with CNIC / Phone support -->
+<div class="flex items-center gap-4 flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface placeholder:text-outline text-body-sm font-body-sm focus:border-primary focus:ring-2 focus:ring-primary-fixed focus:outline-none transition" placeholder="Search riders by Name, CNIC (e.g., 42101-xxxxxxx-x), or Phone..." type="text">
+</div>
+</div>
+<!-- Center Sub-navigation links from Shared Component JSON -->
+<div class="hidden xl:flex items-center gap-6 px-4">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-md text-label-md transition-colors" href="#">Live Routes</a>
+<a class="text-on-surface-variant hover:text-on-surface pb-1 font-label-md text-label-md transition-colors" href="#">Tank Status</a>
+<a class="text-on-surface-variant hover:text-on-surface pb-1 font-label-md text-label-md transition-colors" href="#">Empty Bottle Reconciliation</a>
+</div>
+<!-- Trailing Actions & User Profile -->
+<div class="flex items-center gap-3">
+<!-- Export fleet report secondary action -->
+<button class="inline-flex items-center gap-1.5 px-3 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface rounded-lg font-label-md text-label-md hover:bg-surface-container-low hover:text-primary transition-colors duration-150 active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-[18px]" data-icon="file_download">file_download</span>
+<span class="">Export Fleet Report</span>
+</button>
+<!-- Primary Onboard Button -->
+<button class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md font-semibold hover:bg-primary-container transition-colors duration-150 active:scale-95 shadow-sm" onclick="toggleModal(true)">
+<span class="material-symbols-outlined text-[18px]" data-icon="person_add">person_add</span>
+<span class="">+ Onboard New Rider</span>
+</button>
+<div class="h-6 w-px bg-outline-variant mx-1"></div>
+<!-- Icons from JSON: notifications, qr_code_scanner -->
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-lg transition-colors relative" title="RFID Jar Scanner">
+<span class="material-symbols-outlined text-[20px]" data-icon="qr_code_scanner">qr_code_scanner</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-lg transition-colors relative" title="Notifications">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full ring-2 ring-surface"></span>
+</button>
+<!-- Profile Avatar -->
+<div class="flex items-center gap-2.5 pl-2">
+<img alt="Fleet Dispatcher Operations Lead Avatar" class="w-9 h-9 rounded-full object-cover border border-outline-variant ring-1 ring-primary-fixed" data-alt="A professional headshot portrait of a senior logistics dispatcher working in a modern water purification control room. The individual is wearing crisp navy operational polo uniform, with high-key neutral daylight illuminating clean glass partitions, water testing equipment, and scheduling monitors in the subtle blurred background. Clean blue and pristine white lighting aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL09mGk-hkUVayk_OgQG6rhwnXJPseBRum-MMuudr6G5BpADrTsLcFxIywiHu-Xqv1-UqFqkHCI16P0RuWKDh4nbgxQ8hkncQSqXEcV9beJDLanSYBOIQ9B00emHxGcfVwoa6mhNbzX9encuW7EIR2iV7mqAgLnB8G1-ScaBcTU1RpJ8jo8wo9RizqTqJyp1UIGJmCYmpgYj_lON6nuvuWfu2v7fdIlWYVCXj__CMQshN5Qzy13HPa">
+<div class="hidden 2xl:block text-left">
+<div class="font-label-md text-label-md text-on-surface leading-tight font-bold">Haris R.</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Fleet Dispatcher Lead</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Workspace Area -->
+<main class="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+<!-- Breadcrumb & Page Title -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div>
+<div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm mb-1">
+<span class="">AquaFlow ERP</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span class="">Plant #4 Logistics</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-primary font-semibold">Rider &amp; Fleet Management</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface tracking-tight">Fleet Riders &amp; Drivers Management</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Onboard new delivery riders, assign vehicles, track security deposits, driver commissions, and performance ratings.</p>
+</div>
+<!-- Quick Filters Badge Bar -->
+<div class="flex items-center gap-2 self-start md:self-auto">
+<div class="inline-flex rounded-lg border border-outline-variant bg-surface-container-lowest p-1 shadow-sm">
+<button class="px-3 py-1 rounded font-label-md text-label-md bg-primary text-on-primary font-medium">All Riders (16)</button>
+<button class="px-3 py-1 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition">On Route (12)</button>
+<button class="px-3 py-1 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition">Available (3)</button>
+<button class="px-3 py-1 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition">Rest Day (1)</button>
+</div>
+</div>
+</div>
+<!-- ========================================================= -->
+<!-- 3. TOP KPI METRIC CARDS (4 Cards Grid)                    -->
+<!-- ========================================================= -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Card 1: Total Active Riders -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm hover:border-outline transition-all duration-200">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-bold">Total Active Riders</span>
+<span class="p-2 rounded-lg bg-surface-container text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="sports_motorsports">sports_motorsports</span>
+</span>
+</div>
+<div class="mt-2">
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-[32px] leading-9 font-bold text-on-surface font-tabular-data">16</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Registered</span>
+</div>
+<div class="mt-2.5 flex items-center gap-2 pt-2 border-t border-outline-variant/40">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-secondary-container text-on-secondary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> 12 On Duty
+              </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4 Off-Shift / Standby</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Avg Bottles Delivered/Rider -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm hover:border-outline transition-all duration-200">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-bold">Avg Bottles / Rider</span>
+<span class="p-2 rounded-lg bg-primary-fixed text-on-primary-fixed-variant">
+<span class="material-symbols-outlined text-[20px]" data-icon="water_bottle">water_bottle</span>
+</span>
+</div>
+<div class="mt-2">
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-[32px] leading-9 font-bold text-on-surface font-tabular-data">142</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Jars / Shift</span>
+</div>
+<div class="mt-2.5 flex items-center gap-1.5 pt-2 border-t border-outline-variant/40">
+<span class="material-symbols-outlined text-secondary text-[16px]" data-icon="trending_up">trending_up</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">+18.4% bottles recycled</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">vs last wk</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Rider Cash in Hand -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm hover:border-outline transition-all duration-200">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-bold">Rider Cash In Hand</span>
+<span class="p-2 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined text-[20px]" data-icon="payments">payments</span>
+</span>
+</div>
+<div class="mt-2">
+<div class="flex items-baseline gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold">PKR</span>
+<span class="font-display-lg text-[32px] leading-9 font-bold text-on-surface font-tabular-data">148,200</span>
+</div>
+<div class="mt-2.5 flex items-center gap-1.5 pt-2 border-t border-outline-variant/40">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+<span class="material-symbols-outlined text-[12px]" data-icon="schedule">schedule</span> Pending Handover
+              </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">8 routes closing</span>
+</div>
+</div>
+</div>
+<!-- Card 4: On-Time Delivery Rate -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm hover:border-outline transition-all duration-200">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant font-bold">On-Time Delivery Rate</span>
+<span class="p-2 rounded-lg bg-secondary-container text-on-secondary-container">
+<span class="material-symbols-outlined text-[20px]" data-icon="timer">timer</span>
+</span>
+</div>
+<div class="mt-2">
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-[32px] leading-9 font-bold text-on-surface font-tabular-data">96.4%</span>
+<span class="font-label-md text-label-md text-secondary font-bold">Optimal</span>
+</div>
+<div class="mt-2.5 flex items-center gap-1.5 pt-2 border-t border-outline-variant/40">
+<span class="material-symbols-outlined text-amber-500 text-[16px]" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface">4.9 / 5.0</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Avg Customer Score</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================= -->
+<!-- 4. MAIN BENTO GRID: Table Directory + Live Quick Action   -->
+<!-- ========================================================= -->
+<div class="grid grid-cols-1 2xl:grid-cols-4 gap-6">
+<!-- Registered Riders Directory Table (Spans 3 cols on extra wide) -->
+<div class="2xl:col-span-3 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col overflow-hidden">
+<!-- Table Header Controls Bar -->
+<div class="p-4 border-b border-outline-variant flex flex-wrap items-center justify-between gap-3 bg-surface">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-surface-container text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="badge">badge</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Active Delivery Fleet Roster</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Real-time status, vehicle tagging, collections and daily quotas</p>
+</div>
+</div>
+<!-- Table Filters & Batch Action -->
+<div class="flex items-center gap-2">
+<div class="relative">
+<select class="pl-3 pr-8 py-1.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-sm text-label-sm text-on-surface focus:outline-none focus:border-primary">
+<option>All Territories</option>
+<option>DHA Phase 5</option>
+<option>Clifton Block 2 &amp; 4</option>
+<option>Gulshan-e-Iqbal</option>
+<option>Blue Area Sector F</option>
+<option>Bahria Town Sector C</option>
+</select>
+</div>
+<div class="relative">
+<select class="pl-3 pr-8 py-1.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-sm text-label-sm text-on-surface focus:outline-none focus:border-primary">
+<option>Vehicle: Any Type</option>
+<option>Mini Van - Suzuki Bolan</option>
+<option>1-Ton Pickup - Shehzore</option>
+<option>Three-Wheeler Cargo</option>
+<option>Two-Wheeler Carrier</option>
+</select>
+</div>
+<button class="p-1.5 rounded-lg border border-outline-variant text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition" title="Refresh Table Data">
+<span class="material-symbols-outlined text-[18px]" data-icon="refresh">refresh</span>
+</button>
+</div>
+</div>
+<!-- Table Container with Horizontal Scroll -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant text-[11px] font-label-sm uppercase tracking-wider text-on-surface-variant">
+<th class="py-3 px-4 font-bold">Rider ID &amp; Name</th>
+<th class="py-3 px-4 font-bold">Contact / CNIC</th>
+<th class="py-3 px-4 font-bold">Territory</th>
+<th class="py-3 px-4 font-bold">Assigned Vehicle</th>
+<th class="py-3 px-4 font-bold">Status</th>
+<th class="py-3 px-4 font-bold text-right">Daily Jar Quota</th>
+<th class="py-3 px-4 font-bold text-right">Cash Today</th>
+<th class="py-3 px-4 font-bold text-center">Rating</th>
+<th class="py-3 px-4 font-bold text-center">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/60 font-body-sm text-body-sm text-on-surface">
+<!-- Row 1: Tariq Mehmood (On Route) -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<img alt="Tariq Mehmood" class="w-9 h-9 rounded-full object-cover border border-outline-variant" data-alt="Close-up professional headshot of an experienced Pakistani delivery driver in his late thirties wearing an AquaFlow blue polo shirt and cap. Crisp natural lighting, focused expression with a warm smile, clear daylight ambient background inside a mineral water supply distribution plant." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1EqKy5x8_HU-qDPxMArNAl0DrVLke0iDZDTWBgFPN8Q3YvthOvOw9bJPsKOm19HyP6lXwx7UzUIeWOYZcKolW6YzWrqXPYlx3lN55er4_actIkyj-q1GLQYugoMT12JqwUuxwK3tUWwLYiNovPBvZykh8x-TbW7Ey5I-vojjvtC5gHKJxMOs9HO-oKMARlDQAG97iLe8NZgYhKKYsC8yMMOwvFjhtUtgZZ7ro2XNEvs5Nt_8TFtUu">
+<div>
+<div class="font-bold text-on-surface flex items-center gap-1.5">
+<span class="">Tariq Mehmood</span>
+<span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-surface-container text-primary font-bold">#RD-04</span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> GPS Signal Strong
+                        </div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="font-tabular-data text-on-surface font-medium">+92 300 4829104</div>
+<div class="font-label-sm text-[11px] text-outline font-mono">42101-3849120-1</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-surface-container text-on-surface">
+<span class="material-symbols-outlined text-[13px] text-primary" data-icon="location_on">location_on</span> DHA Phase 5
+                    </span>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-on-surface">Suzuki Bolan Mini Van</div>
+<span class="font-mono text-[11px] bg-surface-container-high px-1.5 py-0.5 rounded text-primary font-bold">KHI-8291</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+<span class="w-1.5 h-1.5 rounded-full bg-sky-600 animate-ping"></span> On Route (Stop 18/24)
+                    </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="font-tabular-data font-bold text-on-surface">160 / 180 Jars</div>
+<div class="w-24 ml-auto bg-surface-container-high h-1.5 rounded-full mt-1 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 88%"></div>
+</div>
+</td>
+<td class="py-3 px-4 text-right">
+<span class="font-tabular-data font-bold text-on-surface">PKR 28,400</span>
+<div class="text-[10px] text-on-surface-variant">14 Cash Orders</div>
+</td>
+<td class="py-3 px-4 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-800 text-[11px] font-bold border border-amber-200">
+<span class="material-symbols-outlined text-[13px] text-amber-500" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="">4.95</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition" title="View Run History">
+<span class="material-symbols-outlined text-[18px]" data-icon="history">history</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition" title="Edit Rider Profile">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition" title="Suspend Route">
+<span class="material-symbols-outlined text-[18px]" data-icon="block">block</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Muhammad Rizwan (On Route) -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<img alt="Muhammad Rizwan" class="w-9 h-9 rounded-full object-cover border border-outline-variant" data-alt="Portrait photograph of an energetic younger delivery driver in high-visibility blue safety vest standing next to pure mineral water containers. Clean natural daylight, optimistic posture, professional demeanor, crisp water distributor background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmsZBYNJqkKNsZtl309rA_bFAVt69OLJzm_fy0Z2l1tAIqrSguRGxFQY36Ilh3Qk_cR4QStSC9QTKBqAScVIRkZznYfIulfSQ1xY-XvsmnZytS8gfBOdpfG_VxMx4xueRxGfywHlAPPoGN2Kbs67336TxcAJ8Rn3YCP1KsNYCJ8dxwm78Gbdhaqk0oDoPLhwOWbgmBO8c2I6XaSV2fp1A7J_pMv0EOWvXBfe44tQIDAZw3UdBZ6uiN">
+<div>
+<div class="font-bold text-on-surface flex items-center gap-1.5">
+<span class="">Muhammad Rizwan</span>
+<span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-surface-container text-primary font-bold">#RD-08</span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Speed: 24 km/h
+                        </div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="font-tabular-data text-on-surface font-medium">+92 321 9920145</div>
+<div class="font-label-sm text-[11px] text-outline font-mono">42201-8726190-7</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-surface-container text-on-surface">
+<span class="material-symbols-outlined text-[13px] text-primary" data-icon="location_on">location_on</span> Clifton Block 2 &amp; 4
+                    </span>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-on-surface">FAW / Shehzore 1-Ton</div>
+<span class="font-mono text-[11px] bg-surface-container-high px-1.5 py-0.5 rounded text-primary font-bold">LE-9102</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+<span class="w-1.5 h-1.5 rounded-full bg-sky-600 animate-ping"></span> On Route (Stop 22/30)
+                    </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="font-tabular-data font-bold text-on-surface">210 / 240 Jars</div>
+<div class="w-24 ml-auto bg-surface-container-high h-1.5 rounded-full mt-1 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 87%"></div>
+</div>
+</td>
+<td class="py-3 px-4 text-right">
+<span class="font-tabular-data font-bold text-on-surface">PKR 41,200</span>
+<div class="text-[10px] text-on-surface-variant">21 Cash Orders</div>
+</td>
+<td class="py-3 px-4 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-800 text-[11px] font-bold border border-amber-200">
+<span class="material-symbols-outlined text-[13px] text-amber-500" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="">4.88</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition" title="View Run History">
+<span class="material-symbols-outlined text-[18px]" data-icon="history">history</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition" title="Edit Rider Profile">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition" title="Suspend Route">
+<span class="material-symbols-outlined text-[18px]" data-icon="block">block</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Bilal Shah (Available / Loading Bay) -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<img alt="Bilal Shah" class="w-9 h-9 rounded-full object-cover border border-outline-variant" data-alt="Portrait photo of a young courier and driver in tidy logistics uniform, standing beside three-wheel cargo rickshaw loaded with water bottles. High key lighting, clean crisp daylight aesthetic, modern fleet maintenance depot background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhgJHUVgDc9sC-kr1rt6tQqaVF-4Zygbm4a-q_v9QxgzqPOzMFbpAk8jSZvXoq6OLaONAkMjMVAsItBaAJ7TuNZ6ox6Oq-zaEjo0HVNALTdQnSeFl3Nqrq-ykfGUtY2AVv4MdkqtOIeSXayxSLwUZEcI7KtSy3SB2t0SBG_1U5CR5DFvSvxAPn7QBKIydxg-89NtuKQ4G247Y9gcjYrBQnkwjcg2-mPmJkPtWyO2M3Tn9jO4QfaY5U">
+<div>
+<div class="font-bold text-on-surface flex items-center gap-1.5">
+<span class="">Bilal Shah</span>
+<span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-surface-container text-primary font-bold">#RD-11</span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">
+                          In Hub Bay #2
+                        </div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="font-tabular-data text-on-surface font-medium">+92 333 7182901</div>
+<div class="font-label-sm text-[11px] text-outline font-mono">42301-4419208-3</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-surface-container text-on-surface">
+<span class="material-symbols-outlined text-[13px] text-primary" data-icon="location_on">location_on</span> Gulshan-e-Iqbal
+                    </span>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-on-surface">Three-Wheeler Cargo Rickshaw</div>
+<span class="font-mono text-[11px] bg-surface-container-high px-1.5 py-0.5 rounded text-primary font-bold">KR-4819</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Available (Dispatching)
+                    </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="font-tabular-data font-bold text-on-surface">75 / 120 Jars</div>
+<div class="w-24 ml-auto bg-surface-container-high h-1.5 rounded-full mt-1 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 62%"></div>
+</div>
+</td>
+<td class="py-3 px-4 text-right">
+<span class="font-tabular-data font-bold text-on-surface">PKR 12,500</span>
+<div class="text-[10px] text-on-surface-variant">First Run Completed</div>
+</td>
+<td class="py-3 px-4 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-800 text-[11px] font-bold border border-amber-200">
+<span class="material-symbols-outlined text-[13px] text-amber-500" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="">4.91</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition" title="View Run History">
+<span class="material-symbols-outlined text-[18px]" data-icon="history">history</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition" title="Edit Rider Profile">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition" title="Suspend Route">
+<span class="material-symbols-outlined text-[18px]" data-icon="block">block</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Zahid Qureshi (On Route) -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<img alt="Zahid Qureshi" class="w-9 h-9 rounded-full object-cover border border-outline-variant" data-alt="A portrait shot of an experienced senior fleet route driver with neat beard wearing clean logistics cap and reflective badge. Bright high-key natural illumination with mineral water transport vans and water carboys arranged in background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfmBvXbdKWdLKPC7rk_N39z09sjp3eiyG_CSlrtStsXnscLCLBtZDFUXBWmYeOMoKRiViLOUdqAeTEhQCLnMEAY7uAHmmuw8TfL22MO4LCn4IrFZYHG9roMrnDrgl2RL1nJiLGtW5A7n03sJgdLG8nEtWu6LXHyIMyG80golzn_-dxjcR3qVdzYVFZk6mEuPyviZXZQLB8CRIsnOUySFe9UxB03i2oHE6fqN6GiC_dAixot0YBXhkM">
+<div>
+<div class="font-bold text-on-surface flex items-center gap-1.5">
+<span class="">Zahid Qureshi</span>
+<span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-surface-container text-primary font-bold">#RD-02</span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Blue Area Corridor
+                        </div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="font-tabular-data text-on-surface font-medium">+92 312 3349182</div>
+<div class="font-label-sm text-[11px] text-outline font-mono">37405-1928374-9</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-surface-container text-on-surface">
+<span class="material-symbols-outlined text-[13px] text-primary" data-icon="location_on">location_on</span> Blue Area Sector F
+                    </span>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-on-surface">FAW / Shehzore 1-Ton</div>
+<span class="font-mono text-[11px] bg-surface-container-high px-1.5 py-0.5 rounded text-primary font-bold">ISB-3091</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
+<span class="w-1.5 h-1.5 rounded-full bg-sky-600 animate-ping"></span> On Route (Stop 14/19)
+                    </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="font-tabular-data font-bold text-on-surface">172 / 190 Jars</div>
+<div class="w-24 ml-auto bg-surface-container-high h-1.5 rounded-full mt-1 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 90%"></div>
+</div>
+</td>
+<td class="py-3 px-4 text-right">
+<span class="font-tabular-data font-bold text-on-surface">PKR 35,600</span>
+<div class="text-[10px] text-on-surface-variant">Corporate Accounts</div>
+</td>
+<td class="py-3 px-4 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-800 text-[11px] font-bold border border-amber-200">
+<span class="material-symbols-outlined text-[13px] text-amber-500" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="">4.98</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition" title="View Run History">
+<span class="material-symbols-outlined text-[18px]" data-icon="history">history</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition" title="Edit Rider Profile">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition" title="Suspend Route">
+<span class="material-symbols-outlined text-[18px]" data-icon="block">block</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Asadullah Khan (Rest Day / Shift Off) -->
+<tr class="hover:bg-surface-container-low/50 transition-colors bg-surface-container-low/20">
+<td class="py-3 px-4">
+<div class="flex items-center gap-3">
+<img alt="Asadullah Khan" class="w-9 h-9 rounded-full object-cover border border-outline-variant opacity-80" data-alt="Portrait photography of a youthful delivery agent dressed in smart casual attire, smiling directly into camera. Pristine white and cool blue lighting, crisp architectural office surroundings of a clean tech-enabled hydration logistics warehouse." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhBsZ6qjBqexLb5K2P4rv3hzZ6_w40tYFSjw9Yy8U9jifnq_IIZQE6Ac2d2evtx5ISEwleLCZ1JuMZ_7SxJP9dkctNkehpBBT_6wgErQdldlT70ryjymJ_AlKAHCIQDMyzcT0CaGp-XuFmdMP7rCYTeuT3cWVKFXtHErQan9AA-cfN0FmYzVjByO6eo5DEEMtEidspKQD20JkNpkVa8eAz91YM3_VxiPOSUNPo_LTWYx8uXR6SIxy0">
+<div>
+<div class="font-bold text-on-surface flex items-center gap-1.5">
+<span class="">Asadullah Khan</span>
+<span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-surface-container text-outline font-bold">#RD-14</span>
+</div>
+<div class="font-label-sm text-label-sm text-outline">
+                          Next Shift: Tomorrow 08:00
+                        </div>
+</div>
+</div>
+</td>
+<td class="py-3 px-4">
+<div class="font-tabular-data text-on-surface font-medium">+92 345 1029384</div>
+<div class="font-label-sm text-[11px] text-outline font-mono">42101-7261543-5</div>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-surface-container text-on-surface-variant">
+<span class="material-symbols-outlined text-[13px] text-outline" data-icon="location_on">location_on</span> Bahria Town Sector C
+                    </span>
+</td>
+<td class="py-3 px-4">
+<div class="font-medium text-on-surface-variant">Two-Wheeler Bottle Carrier</div>
+<span class="font-mono text-[11px] bg-surface-container px-1.5 py-0.5 rounded text-outline font-bold">KHI-9932</span>
+</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Rest Day (Off-Shift)
+                    </span>
+</td>
+<td class="py-3 px-4 text-right">
+<div class="font-tabular-data text-on-surface-variant">0 / 80 Jars</div>
+<div class="text-[10px] text-outline">Standby Mode</div>
+</td>
+<td class="py-3 px-4 text-right">
+<span class="font-tabular-data text-on-surface-variant">PKR 0</span>
+<div class="text-[10px] text-outline">Settled Yesterday</div>
+</td>
+<td class="py-3 px-4 text-center">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-50 text-amber-800 text-[11px] font-bold border border-amber-200">
+<span class="material-symbols-outlined text-[13px] text-amber-500" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="">4.84</span>
+</div>
+</td>
+<td class="py-3 px-4 text-center">
+<div class="flex items-center justify-center gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition" title="View Run History">
+<span class="material-symbols-outlined text-[18px]" data-icon="history">history</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition" title="Edit Rider Profile">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-error hover:bg-error-container transition" title="Activate Early Shift">
+<span class="material-symbols-outlined text-[18px]" data-icon="play_arrow">play_arrow</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination & Summary Footer -->
+<div class="p-4 border-t border-outline-variant bg-surface flex flex-wrap items-center justify-between gap-3 text-label-sm font-label-sm text-on-surface-variant">
+<div class="">
+              Showing <span class="font-bold text-on-surface">5</span> of <span class="font-bold text-on-surface">16</span> registered logistics drivers across 5 dispatch territories
+            </div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface-variant disabled:opacity-50 hover:bg-surface-container-low transition" disabled="">
+                Previous
+              </button>
+<button class="px-3 py-1.5 bg-primary text-on-primary font-bold rounded-lg shadow-sm">
+                1
+              </button>
+<button class="px-3 py-1.5 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition">
+                2
+              </button>
+<button class="px-3 py-1.5 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition">
+                3
+              </button>
+<button class="px-3 py-1.5 border border-outline-variant rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition">
+                Next
+              </button>
+</div>
+</div>
+</div>
+<!-- Right Side Panel: Fast Action & Deposit Reconciliation Widget -->
+<div class="space-y-6">
+<!-- Security Deposit & Jar Guarantee Ledger Summary -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="p-1.5 rounded-lg bg-primary-fixed text-primary">
+<span class="material-symbols-outlined text-[18px]" data-icon="lock_clock">lock_clock</span>
+</span>
+<h3 class="font-title-md text-title-md font-bold text-on-surface">Rider Escrow &amp; Deposits</h3>
+</div>
+<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">100% FUNDED</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">
+              Cash security deposits held against missing 19L / 20L polycarbonate bottles and daily cash handovers.
+            </p>
+<div class="space-y-3 p-3 rounded-lg bg-surface-container-low border border-outline-variant/60">
+<div class="flex justify-between items-center text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Total Held Escrow:</span>
+<span class="font-tabular-data font-bold text-on-surface">PKR 320,000</span>
+</div>
+<div class="flex justify-between items-center text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Default per Driver:</span>
+<span class="font-tabular-data font-bold text-primary">PKR 20,000</span>
+</div>
+<div class="flex justify-between items-center text-body-sm font-body-sm">
+<span class="text-on-surface-variant">Jar Loss Deductions (Mtd):</span>
+<span class="font-tabular-data font-bold text-error">PKR 4,800 (4 Jars)</span>
+</div>
+</div>
+<!-- Fast Link -->
+<button class="w-full mt-4 flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-outline-variant hover:bg-surface-container text-primary font-label-md text-label-md font-semibold transition">
+<span class="material-symbols-outlined text-[18px]" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="">Reconcile Fleet Deposits</span>
+</button>
+</div>
+<!-- Vehicle Allocation & Fleet Health Breakdown -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<h3 class="font-title-md text-title-md font-bold text-on-surface">Fleet Vehicle Mix</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">16 Units Active</span>
+</div>
+<div class="space-y-3">
+<!-- Vehicle 1 -->
+<div>
+<div class="flex justify-between text-body-sm font-body-sm mb-1">
+<span class="text-on-surface font-medium">Mini Van - Bolan (140 Jars)</span>
+<span class="font-tabular-data font-bold text-on-surface">7 Units (44%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 44%"></div>
+</div>
+</div>
+<!-- Vehicle 2 -->
+<div>
+<div class="flex justify-between text-body-sm font-body-sm mb-1">
+<span class="text-on-surface font-medium">1-Ton Pickup - Shehzore (240 Jars)</span>
+<span class="font-tabular-data font-bold text-on-surface">4 Units (25%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 25%"></div>
+</div>
+</div>
+<!-- Vehicle 3 -->
+<div>
+<div class="flex justify-between text-body-sm font-body-sm mb-1">
+<span class="text-on-surface font-medium">Three-Wheeler Cargo (80 Jars)</span>
+<span class="font-tabular-data font-bold text-on-surface">3 Units (19%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary-container h-full rounded-full" style="width: 19%"></div>
+</div>
+</div>
+<!-- Vehicle 4 -->
+<div>
+<div class="flex justify-between text-body-sm font-body-sm mb-1">
+<span class="text-on-surface font-medium">Two-Wheeler Carrier (12 Jars)</span>
+<span class="font-tabular-data font-bold text-on-surface">2 Units (12%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-outline h-full rounded-full" style="width: 12%"></div>
+</div>
+</div>
+</div>
+<!-- Quick Add Card Button -->
+<div class="mt-5 pt-4 border-t border-outline-variant/60">
+<button class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold hover:bg-primary-container transition active:scale-95 shadow-sm" onclick="toggleModal(true)">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_circle">add_circle</span>
+<span class="">Deploy New Delivery Partner</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- ========================================================= -->
+<!-- 5. ONBOARDING MODAL / SLIT PANEL DIALOG (Form Section)     -->
+<!-- ========================================================= -->
+<div class="fixed inset-0 z-50 overflow-y-auto bg-inverse-surface/60 backdrop-blur-sm hidden flex items-center justify-center p-4" id="onboardModal">
+<div class="relative bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+<!-- Modal Header -->
+<div class="px-6 py-4 border-b border-outline-variant bg-surface flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="p-2.5 rounded-xl bg-primary-fixed text-primary">
+<span class="material-symbols-outlined text-[24px]" data-icon="person_add">person_add</span>
+</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Add New Rider &amp; Delivery Partner</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Panniwalay Bottling &amp; Route Logistics Provisioning</p>
+</div>
+</div>
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition" onclick="toggleModal(false)">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+<!-- Modal Body (Comprehensive Form) -->
+<div class="p-6 overflow-y-auto space-y-6">
+<!-- 1. Personal Details Section -->
+<div>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="badge">badge</span>
+<h3 class="font-title-md text-title-md font-bold text-on-surface">1. Personal &amp; Identification Details</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1">Full Legal Name *</label>
+<input class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md font-body-md text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary-fixed focus:outline-none" placeholder="e.g., Tariq Mehmood" type="text">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1">Mobile Phone (WhatsApp Enabled) *</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-on-surface-variant font-label-md text-label-md">+92</span>
+<input class="w-full pl-12 pr-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md font-body-md text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary-fixed focus:outline-none" placeholder="300 1234567" type="text">
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1">CNIC / National ID Number *</label>
+<input class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md font-body-md text-on-surface placeholder:text-outline font-mono focus:border-primary focus:ring-2 focus:ring-primary-fixed focus:outline-none" placeholder="42101-xxxxxxx-x" type="text">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1">Emergency Contact Person &amp; Phone *</label>
+<input class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md font-body-md text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary-fixed focus:outline-none" placeholder="Brother / Father: +92 333 xxxxxxx" type="text">
+</div>
+</div>
+</div>
+<div class="h-px bg-outline-variant/60"></div>
+<!-- 2. Vehicle & Fleet Assignment -->
+<div>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="local_shipping">local_shipping</span>
+<h3 class="font-title-md text-title-md font-bold text-on-surface">2. Assigned Vehicle &amp; Delivery Territory</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1">Assigned Vehicle Type *</label>
+<select class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md font-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary-fixed focus:outline-none">
+<option selected="">Mini Van - Suzuki Bolan (Capacity: 140 Jars)</option>
+<option>1-Ton Pickup - FAW / Shehzore (Capacity: 240 Jars)</option>
+<option>Three-Wheeler Cargo Rickshaw (Capacity: 80 Jars)</option>
+<option>Two-Wheeler Bottle Carrier (Capacity: 12 Jars)</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1">Vehicle License Plate # *</label>
+<input class="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md font-body-md text-on-surface placeholder:text-outline font-mono uppercase focus:border-primary focus:ring-2 focus:ring-primary-fixed focus:outline-none" placeholder="e.g., KHI-8291 or LE-9102" type="text">
+</div>
+<div class="md:col-span-2">
+<label class="block font-label-md text-label-md text-on-surface mb-1">Primary Assigned Delivery Territory / Areas (Multi-select) *</label>
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 mt-2">
+<label class="flex items-center gap-2 p-2.5 rounded-lg border border-primary bg-primary-fixed/20 cursor-pointer">
+<input checked="" class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">DHA Phase 5</span>
+</label>
+<label class="flex items-center gap-2 p-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer">
+<input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">Clifton</span>
+</label>
+<label class="flex items-center gap-2 p-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer">
+<input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">Gulshan-e-Iqbal</span>
+</label>
+<label class="flex items-center gap-2 p-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer">
+<input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">Blue Area</span>
+</label>
+<label class="flex items-center gap-2 p-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer">
+<input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">Bahria Town</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+<div class="h-px bg-outline-variant/60"></div>
+<!-- 3. Compensation, Commission & Escrow -->
+<div>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="payments">payments</span>
+<h3 class="font-title-md text-title-md font-bold text-on-surface">3. Compensation &amp; Guarantee Security Model</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1">Monthly Base Salary (PKR) *</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-outline font-label-md text-label-md">PKR</span>
+<input class="w-full pl-12 pr-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-tabular-data text-body-md font-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary-fixed focus:outline-none" type="number" value="35000">
+</div>
+<span class="text-[11px] text-on-surface-variant mt-1 block">Fixed guaranteed monthly stipend</span>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1">Per Jar Delivery Incentive *</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-outline font-label-md text-label-md">PKR</span>
+<input class="w-full pl-12 pr-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-tabular-data text-body-md font-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary-fixed focus:outline-none" type="number" value="5">
+</div>
+<span class="text-[11px] text-on-surface-variant mt-1 block">Per 20L jar delivered &amp; verified</span>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-1">Cash Guarantee Held (PKR) *</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-outline font-label-md text-label-md">PKR</span>
+<input class="w-full pl-12 pr-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-tabular-data text-body-md font-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary-fixed focus:outline-none" type="number" value="20000">
+</div>
+<span class="text-[11px] text-on-surface-variant mt-1 block">Held for jar loss &amp; collection escrow</span>
+</div>
+</div>
+</div>
+<div class="h-px bg-outline-variant/60"></div>
+<!-- 4. Document Scans Upload -->
+<div>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="cloud_upload">cloud_upload</span>
+<h3 class="font-title-md text-title-md font-bold text-on-surface">4. Verification Documents (License &amp; CNIC Scans)</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low transition cursor-pointer">
+<span class="material-symbols-outlined text-[28px] text-primary" data-icon="id_card">id_card</span>
+<div class="font-label-md text-label-md font-bold text-on-surface mt-1">Upload Driver CNIC Front &amp; Back</div>
+<p class="text-[11px] text-on-surface-variant">PDF, JPG or PNG up to 10MB</p>
+<span class="mt-2 inline-block px-2.5 py-1 text-[11px] font-semibold bg-surface-container text-primary rounded-lg">Browse File</span>
+</div>
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low transition cursor-pointer">
+<span class="material-symbols-outlined text-[28px] text-primary" data-icon="drive_eta">drive_eta</span>
+<div class="font-label-md text-label-md font-bold text-on-surface mt-1">Upload Valid Driving License</div>
+<p class="text-[11px] text-on-surface-variant">LTV / Commercial Endorsement required</p>
+<span class="mt-2 inline-block px-2.5 py-1 text-[11px] font-semibold bg-surface-container text-primary rounded-lg">Browse File</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="px-6 py-4 border-t border-outline-variant bg-surface flex items-center justify-between">
+<div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary" data-icon="check_circle">check_circle</span>
+<span class="">Automatic SMS dispatch credentials will be triggered upon registration</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 border border-outline-variant text-on-surface rounded-lg font-label-md text-label-md hover:bg-surface-container transition" onclick="toggleModal(false)">
+            Cancel
+          </button>
+<button class="px-5 py-2 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-semibold rounded-lg shadow-sm transition active:scale-95" onclick="toggleModal(false)">
+            Register Rider &amp; Generate Login Credentials
+          </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Client-side modal toggling helper script -->
+<script>
+    function toggleModal(show) {
+      const modal = document.getElementById('onboardModal');
+      if (show) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+  </script>
+
+
+</body></html>
