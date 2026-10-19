@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.expenseVouchersRelations = exports.paymentsRelations = exports.invoicesRelations = exports.routeStopsRelations = exports.routeRunsRelations = exports.customersRelations = exports.ridersRelations = exports.usersRelations = exports.exchangeRates = exports.settings = exports.cashHandovers = exports.expenseVouchers = exports.expenseHeads = exports.payments = exports.invoices = exports.deposits = exports.jarLedger = exports.deliveryItems = exports.deliveries = exports.routeStops = exports.routeRuns = exports.stockMovements = exports.inventoryItems = exports.customerInvites = exports.customers = exports.riders = exports.vehicles = exports.zones = exports.auditLogs = exports.users = exports.roles = void 0;
+exports.targetRoutesRelations = exports.expenseVouchersRelations = exports.paymentsRelations = exports.invoicesRelations = exports.routeStopsRelations = exports.routeRunsRelations = exports.customersRelations = exports.ridersRelations = exports.usersRelations = exports.exchangeRates = exports.settings = exports.cashHandovers = exports.expenseVouchers = exports.expenseHeads = exports.payments = exports.invoices = exports.deposits = exports.jarLedger = exports.deliveryItems = exports.deliveries = exports.routeStops = exports.routeRuns = exports.stockMovements = exports.inventoryItems = exports.customerInvites = exports.customers = exports.targetRoutes = exports.riders = exports.vehicles = exports.zones = exports.auditLogs = exports.users = exports.roles = void 0;
 const mysql_core_1 = require("drizzle-orm/mysql-core");
 const drizzle_orm_1 = require("drizzle-orm");
 // ─── ROLES ────────────────────────────────────────────────────────
@@ -78,6 +78,25 @@ exports.riders = (0, mysql_core_1.mysqlTable)('riders', {
     rating: (0, mysql_core_1.decimal)('rating', { precision: 3, scale: 2 }).default('0'),
     avatarUrl: (0, mysql_core_1.varchar)('avatar_url', { length: 500 }),
     gpsStatus: (0, mysql_core_1.varchar)('gps_status', { length: 50 }),
+    isActive: (0, mysql_core_1.boolean)('is_active').default(true).notNull(),
+    createdAt: (0, mysql_core_1.timestamp)('created_at').defaultNow().notNull(),
+    updatedAt: (0, mysql_core_1.timestamp)('updated_at').defaultNow().onUpdateNow().notNull(),
+});
+// ─── TARGET ROUTES ────────────────────────────────────────────────
+exports.targetRoutes = (0, mysql_core_1.mysqlTable)('target_routes', {
+    id: (0, mysql_core_1.int)('id').primaryKey().autoincrement(),
+    routeCode: (0, mysql_core_1.varchar)('route_code', { length: 30 }).notNull().unique(), // e.g. TR-101
+    name: (0, mysql_core_1.varchar)('name', { length: 255 }).notNull(), // e.g. DHA Phase 5 & 6 Express
+    zoneId: (0, mysql_core_1.int)('zone_id').references(() => exports.zones.id),
+    riderId: (0, mysql_core_1.int)('rider_id').references(() => exports.riders.id),
+    vehicleId: (0, mysql_core_1.int)('vehicle_id').references(() => exports.vehicles.id),
+    shift: (0, mysql_core_1.mysqlEnum)('shift', ['morning', 'afternoon']).default('morning'),
+    departureTime: (0, mysql_core_1.varchar)('departure_time', { length: 20 }).default('07:30 AM'),
+    loadingDockBay: (0, mysql_core_1.varchar)('loading_dock_bay', { length: 50 }).default('Bay #1'),
+    targetJars: (0, mysql_core_1.int)('target_jars').default(120),
+    targetCash: (0, mysql_core_1.bigint)('target_cash', { mode: 'number' }).default(0),
+    estStops: (0, mysql_core_1.int)('est_stops').default(25),
+    description: (0, mysql_core_1.text)('description'),
     isActive: (0, mysql_core_1.boolean)('is_active').default(true).notNull(),
     createdAt: (0, mysql_core_1.timestamp)('created_at').defaultNow().notNull(),
     updatedAt: (0, mysql_core_1.timestamp)('updated_at').defaultNow().onUpdateNow().notNull(),
@@ -357,5 +376,10 @@ exports.paymentsRelations = (0, drizzle_orm_1.relations)(exports.payments, ({ on
 }));
 exports.expenseVouchersRelations = (0, drizzle_orm_1.relations)(exports.expenseVouchers, ({ one }) => ({
     expenseHead: one(exports.expenseHeads, { fields: [exports.expenseVouchers.expenseHeadId], references: [exports.expenseHeads.id] }),
+}));
+exports.targetRoutesRelations = (0, drizzle_orm_1.relations)(exports.targetRoutes, ({ one }) => ({
+    zone: one(exports.zones, { fields: [exports.targetRoutes.zoneId], references: [exports.zones.id] }),
+    rider: one(exports.riders, { fields: [exports.targetRoutes.riderId], references: [exports.riders.id] }),
+    vehicle: one(exports.vehicles, { fields: [exports.targetRoutes.vehicleId], references: [exports.vehicles.id] }),
 }));
 //# sourceMappingURL=schema.js.map

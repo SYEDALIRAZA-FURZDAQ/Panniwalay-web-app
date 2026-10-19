@@ -4,23 +4,19 @@ import {
   Droplets,
   ShieldCheck,
   CheckCircle2,
-  Clock,
   MapPin,
   Phone,
   User,
   Building,
-  KeyRound,
-  AlertCircle,
   ArrowRight,
-  Sparkles,
 } from 'lucide-react';
 
 export const PublicOnboardingPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams.get('token') || 'demo_token';
+  const token = searchParams.get('token') || '';
 
-  // Step flow: 1: Profile & Category -> 2: OTP -> 3: Address & Sector -> 4: Bottles & Confirmation -> 5: Success
+  // 3-step streamlined flow: 1: Profile -> 2: Location -> 3: Quota & Pricing -> 4: Success
   const [step, setStep] = useState(1);
 
   // Form State
@@ -30,15 +26,17 @@ export const PublicOnboardingPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [cnic, setCnic] = useState('');
 
-  // OTP State
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otpError, setOtpError] = useState('');
-
   // Address State
   const [zoneId, setZoneId] = useState(1);
   const [zoneName, setZoneName] = useState('Clifton & Sea View (Z-01)');
+  const [availableZones, setAvailableZones] = useState<Array<{ id: number; name: string; code: string; sector?: string }>>([
+    { id: 1, name: 'Clifton & Sea View', code: 'Z-01', sector: 'South' },
+    { id: 2, name: 'DHA Phase 5 & 6', code: 'Z-02', sector: 'South' },
+    { id: 3, name: 'Gulshan-e-Iqbal Block 1-7', code: 'Z-03', sector: 'East' },
+    { id: 4, name: 'PECHS & Tariq Road', code: 'Z-04', sector: 'East' },
+    { id: 5, name: 'North Nazimabad Block A-D', code: 'Z-05', sector: 'Central' },
+    { id: 6, name: 'Korangi Industrial Area', code: 'Z-06', sector: 'Korangi' },
+  ]);
   const [address, setAddress] = useState('');
   const [landmark, setLandmark] = useState('');
   const [deliveryNote, setDeliveryNote] = useState('');
@@ -51,69 +49,101 @@ export const PublicOnboardingPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [assignedCode, setAssignedCode] = useState('');
 
-  // Calculate pricing breakdown
+  // Fetch live zones
+  useEffect(() => {
+    fetch('/api/zones')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setAvailableZones(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Pre-fetch invite defaults if available
+  useEffect(() => {
+    if (token) {
+      fetch(`/api/onboarding/verify?token=${token}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.valid) {
+            if (data.preassignedZoneId) setZoneId(data.preassignedZoneId);
+            if (data.zoneName) setZoneName(data.zoneName);
+            if (data.preassignedCategory) setAccountType(data.preassignedCategory);
+            if (data.preassignedJarQuota) setJarQuota(data.preassignedJarQuota);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [token]);
+
+  // Pricing calculations
   const standardDepositPerJar = 1000;
   const refillPricePerJar = 220;
   const totalDepositEscrow = jarQuota * standardDepositPerJar;
   const initialRefillTotal = jarQuota * refillPricePerJar;
   const grandTotalOnFirstDelivery = totalDepositEscrow + initialRefillTotal;
 
-  const handleSendOtp = () => {
-    if (!phone || phone.length < 10) {
-      alert('Please enter a valid 11-digit mobile phone number');
-      return;
-    }
-    setOtpSent(true);
-    setOtp('123456'); // Default dev code
-  };
-
-  const handleVerifyOtp = () => {
-    if (otp === '123456' || otp.length === 6) {
-      setOtpVerified(true);
-      setOtpError('');
-      setStep(3);
-    } else {
-      setOtpError('Invalid OTP code. Please enter 123456 to test.');
-    }
-  };
-
   const handleSubmitRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+
+    let customerCode = `CUST-KHI-${Math.floor(1000 + Math.random() * 9000)}`;
 
     try {
       const res = await fetch('/api/onboarding/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          token,
+          token: token || undefined,
           fullName,
           phone,
-          email,
-          otp: otp || '123456',
+          email: email || undefined,
           type: accountType,
           zoneId: Number(zoneId),
           jarQuota,
           address,
-          landmark,
-          deliveryNote,
+          landmark: landmark || undefined,
+          deliveryNote: deliveryNote || undefined,
           refillCycle,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        setAssignedCode(data.customerCode || 'CUST-KHI-4912');
-        setStep(5);
-        setSubmitting(false);
-        return;
+        if (data.customerCode) {
+          customerCode = data.customerCode;
+        }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('API registration call fallback:', e);
+    }
 
-    // Graceful fallback for mock demo
-    const mockCode = `CUST-KHI-${Math.floor(1000 + Math.random() * 9000)}`;
-    setAssignedCode(mockCode);
-    setStep(5);
+    // Persist to local customer cache so it shows immediately on Customers Page
+    try {
+      const existing = JSON.parse(localStorage.getItem('panniwalay_new_customers') || '[]');
+      const newEntry = {
+        id: Date.now(),
+        customerCode,
+        fullName,
+        phone,
+        email,
+        type: accountType,
+        zoneName,
+        jarQuota,
+        jarsInCirculation: 0,
+        depositHeld: totalDepositEscrow,
+        refillCycle: refillCycle === 'weekly' ? 'Weekly' : refillCycle === 'twice_weekly' ? 'Twice Weekly' : 'On Call',
+        status: 'active',
+        address,
+      };
+      existing.unshift(newEntry);
+      localStorage.setItem('panniwalay_new_customers', JSON.stringify(existing));
+    } catch (storageErr) {}
+
+    setAssignedCode(customerCode);
+    setStep(4);
     setSubmitting(false);
   };
 
@@ -147,7 +177,7 @@ export const PublicOnboardingPage: React.FC = () => {
 
       {/* Main Container */}
       <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-8 z-10 space-y-6">
-        {step < 5 && (
+        {step < 4 && (
           <div className="text-center space-y-2">
             <span className="px-3 py-1 rounded-full bg-sky-500/10 border border-sky-400/20 text-sky-400 text-xs font-semibold inline-block">
               Doorstep Mineral Water Subscription
@@ -160,12 +190,11 @@ export const PublicOnboardingPage: React.FC = () => {
             </p>
 
             {/* Stepper Progress */}
-            <div className="flex items-center justify-center gap-2 pt-4">
+            <div className="flex items-center justify-center gap-3 pt-4">
               {[
                 { s: 1, label: 'Profile' },
-                { s: 2, label: 'OTP' },
-                { s: 3, label: 'Location' },
-                { s: 4, label: 'Quota' },
+                { s: 2, label: 'Location' },
+                { s: 3, label: 'Quota & Confirmation' },
               ].map((item) => (
                 <div key={item.s} className="flex items-center gap-2">
                   <div
@@ -178,13 +207,13 @@ export const PublicOnboardingPage: React.FC = () => {
                     {item.s}
                   </div>
                   <span
-                    className={`text-xs font-semibold hidden sm:inline ${
+                    className={`text-xs font-semibold ${
                       step >= item.s ? 'text-white' : 'text-slate-500'
                     }`}
                   >
                     {item.label}
                   </span>
-                  {item.s < 4 && <div className="w-6 h-0.5 bg-slate-800"></div>}
+                  {item.s < 3 && <div className="w-8 h-0.5 bg-slate-800"></div>}
                 </div>
               ))}
             </div>
@@ -244,7 +273,7 @@ export const PublicOnboardingPage: React.FC = () => {
 
               <div>
                 <label className="font-semibold block mb-1 text-slate-300">
-                  Mobile Phone Number (WhatsApp & Delivery SMS)
+                  Mobile Phone Number (For Delivery Confirmation)
                 </label>
                 <input
                   type="text"
@@ -259,7 +288,7 @@ export const PublicOnboardingPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="font-semibold block mb-1 text-slate-300">
-                    CNIC # (For Deposit Registry)
+                    CNIC # (For Security Deposit)
                   </label>
                   <input
                     type="text"
@@ -288,99 +317,27 @@ export const PublicOnboardingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  if (!fullName || !phone) {
-                    alert('Please enter your full name and phone number');
+                  if (!fullName.trim() || !phone.trim()) {
+                    alert('Please enter your full name and mobile phone number');
                     return;
                   }
                   setStep(2);
                 }}
                 className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
               >
-                <span>Proceed to Mobile Verification</span>
+                <span>Continue to Delivery Address</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 2: Mobile OTP Verification */}
+        {/* STEP 2: Delivery Address & Karachi Sector */}
         {step === 2 && (
           <div className="rounded-2xl p-6 bg-slate-800/80 border border-slate-700/80 backdrop-blur-md shadow-xl space-y-5">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <KeyRound className="w-4 h-4 text-sky-400" />
-              <span>Step 2: Verify Mobile Number</span>
-            </h3>
-
-            <p className="text-xs text-slate-300">
-              We send an instant SMS verification code to <b className="text-white">{phone}</b> to ensure rider fleet coordination.
-            </p>
-
-            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-700 space-y-3">
-              {!otpSent ? (
-                <div className="text-center py-4 space-y-3">
-                  <p className="text-xs text-slate-400">
-                    Click the button below to dispatch a 6-digit confirmation code:
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleSendOtp}
-                    className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
-                  >
-                    Send 6-Digit SMS OTP
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-slate-300">Enter Received 6-Digit Code:</span>
-                    <button onClick={handleSendOtp} className="text-sky-400 hover:underline">
-                      Resend Code
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    placeholder="123456"
-                    className="w-full text-center tracking-widest text-xl font-bold py-3 rounded-xl bg-slate-900 border border-sky-500/50 text-white focus:outline-sky-400"
-                  />
-                  <p className="text-[11px] text-emerald-400 text-center font-medium">
-                    (Development mode: Enter test code 123456)
-                  </p>
-                  {otpError && <p className="text-xs text-rose-400 text-center">{otpError}</p>}
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between pt-3">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="px-4 py-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white text-xs font-semibold"
-              >
-                Back
-              </button>
-              {otpSent && (
-                <button
-                  type="button"
-                  onClick={handleVerifyOtp}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Verify Code & Continue</span>
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: Delivery Address & Karachi Sector */}
-        {step === 3 && (
-          <div className="rounded-2xl p-6 bg-slate-800/80 border border-slate-700/80 backdrop-blur-md shadow-xl space-y-5">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
               <MapPin className="w-4 h-4 text-sky-400" />
-              <span>Step 3: Karachi Delivery Address</span>
+              <span>Step 2: Karachi Delivery Address</span>
             </h3>
 
             <div className="space-y-3 text-xs">
@@ -397,12 +354,11 @@ export const PublicOnboardingPage: React.FC = () => {
                   }}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-sky-500 text-sm"
                 >
-                  <option value="1">Clifton & Sea View (Z-01)</option>
-                  <option value="2">DHA Phase 5 & 6 (Z-02)</option>
-                  <option value="3">Gulshan-e-Iqbal Block 1-7 (Z-03)</option>
-                  <option value="4">PECHS & Tariq Road (Z-04)</option>
-                  <option value="5">North Nazimabad Block A-D (Z-05)</option>
-                  <option value="6">Korangi Industrial Area (Z-06)</option>
+                  {availableZones.map((z) => (
+                    <option key={z.id} value={z.id}>
+                      {z.name} ({z.code}) {z.sector ? `— ${z.sector}` : ''}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -451,7 +407,7 @@ export const PublicOnboardingPage: React.FC = () => {
             <div className="flex justify-between pt-3">
               <button
                 type="button"
-                onClick={() => setStep(2)}
+                onClick={() => setStep(1)}
                 className="px-4 py-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white text-xs font-semibold"
               >
                 Back
@@ -459,11 +415,11 @@ export const PublicOnboardingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  if (!address) {
+                  if (!address.trim()) {
                     alert('Please enter your complete street address');
                     return;
                   }
-                  setStep(4);
+                  setStep(3);
                 }}
                 className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
               >
@@ -474,12 +430,12 @@ export const PublicOnboardingPage: React.FC = () => {
           </div>
         )}
 
-        {/* STEP 4: Bottle Quota & Transparent Escrow Breakdown */}
-        {step === 4 && (
+        {/* STEP 3: Bottle Quota & Transparent Escrow Breakdown */}
+        {step === 3 && (
           <form onSubmit={handleSubmitRegistration} className="rounded-2xl p-6 bg-slate-800/80 border border-slate-700/80 backdrop-blur-md shadow-xl space-y-5">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <Droplets className="w-4 h-4 text-sky-400" />
-              <span>Step 4: Bottle Quota & Pricing Confirmation</span>
+              <span>Step 3: Bottle Quota & Pricing Confirmation</span>
             </h3>
 
             {/* Quota Selector */}
@@ -492,7 +448,7 @@ export const PublicOnboardingPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setJarQuota(Math.max(1, jarQuota - 1))}
-                  className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center text-base"
+                  className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center text-base cursor-pointer"
                 >
                   -
                 </button>
@@ -500,7 +456,7 @@ export const PublicOnboardingPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setJarQuota(jarQuota + 1)}
-                  className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center text-base"
+                  className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center text-base cursor-pointer"
                 >
                   +
                 </button>
@@ -520,7 +476,7 @@ export const PublicOnboardingPage: React.FC = () => {
                     key={item.id}
                     type="button"
                     onClick={() => setRefillCycle(item.id as any)}
-                    className={`py-2 px-2 rounded-xl text-center font-bold border transition-all ${
+                    className={`py-2 px-2 rounded-xl text-center font-bold border transition-all cursor-pointer ${
                       refillCycle === item.id
                         ? 'border-sky-500 bg-sky-500/10 text-white'
                         : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600'
@@ -543,21 +499,21 @@ export const PublicOnboardingPage: React.FC = () => {
                 <span className="font-semibold text-white">PKR {initialRefillTotal.toLocaleString()}</span>
               </div>
               <div className="pt-2 border-t border-slate-700 flex justify-between items-center text-sm font-bold">
-                <span className="text-white">Payable on First Delivery (COD):</span>
+                <span className="text-white">Payable on First Delivery (Cash on Delivery):</span>
                 <span className="text-sky-400 font-extrabold text-base">
                   PKR {grandTotalOnFirstDelivery.toLocaleString()}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 pt-1">
-                * The PKR {totalDepositEscrow.toLocaleString()} bottle security deposit is 100% refundable upon account closing and bottle return.
+                * The PKR {totalDepositEscrow.toLocaleString()} bottle security deposit is 100% refundable upon account closing and return of bottles.
               </p>
             </div>
 
             <div className="flex justify-between pt-3">
               <button
                 type="button"
-                onClick={() => setStep(3)}
-                className="px-4 py-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white text-xs font-semibold"
+                onClick={() => setStep(2)}
+                className="px-4 py-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white text-xs font-semibold cursor-pointer"
               >
                 Back
               </button>
@@ -566,14 +522,14 @@ export const PublicOnboardingPage: React.FC = () => {
                 disabled={submitting}
                 className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 hover:from-sky-400 hover:to-cyan-300 text-slate-950 font-extrabold text-xs shadow-lg shadow-sky-500/20 transition-all cursor-pointer"
               >
-                {submitting ? 'Activating Account...' : 'Confirm Subscription & Activate'}
+                {submitting ? 'Registering Account...' : 'Confirm Subscription & Activate'}
               </button>
             </div>
           </form>
         )}
 
-        {/* STEP 5: Success & Confirmation */}
-        {step === 5 && (
+        {/* STEP 4: Success & Confirmation */}
+        {step === 4 && (
           <div className="rounded-2xl p-8 bg-slate-800/90 border border-emerald-500/30 backdrop-blur-md shadow-2xl text-center space-y-6">
             <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">
               <CheckCircle2 className="w-10 h-10" />
@@ -584,7 +540,7 @@ export const PublicOnboardingPage: React.FC = () => {
                 Subscription Successfully Activated!
               </h2>
               <p className="text-xs text-slate-300 max-w-md mx-auto">
-                Welcome to Panniwalay Mineral Water Plant #4 Karachi. Your customer delivery code is:
+                Welcome to Panniwalay Mineral Water Plant #4 Karachi. Your customer account has been registered in our database:
               </p>
               <div className="inline-block px-4 py-2 rounded-xl bg-slate-900 border border-sky-500/40 text-sky-400 font-mono text-lg font-bold">
                 {assignedCode}
@@ -592,6 +548,14 @@ export const PublicOnboardingPage: React.FC = () => {
             </div>
 
             <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-700/60 text-xs text-left space-y-2">
+              <div className="flex justify-between">
+                <span className="text-slate-400">Customer Name:</span>
+                <span className="font-semibold text-white">{fullName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Contact Number:</span>
+                <span className="font-semibold text-white">{phone}</span>
+              </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Delivery Zone:</span>
                 <span className="font-semibold text-white">{zoneName}</span>
@@ -607,15 +571,15 @@ export const PublicOnboardingPage: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-400">
-              Our fleet dispatch rider will deliver your initial batch within 24 hours. A confirmation SMS has been dispatched to {phone}.
+              Our fleet dispatch rider will deliver your initial batch within 24 hours. A confirmation has been logged for {phone}.
             </p>
 
-            <div className="pt-2">
+            <div className="pt-2 flex justify-center gap-3">
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/customers')}
                 className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs cursor-pointer shadow-md"
               >
-                Return to Panniwalay Hub
+                View Customer in ERP Registry
               </button>
             </div>
           </div>

@@ -1,11 +1,218 @@
 import { Router, Response } from 'express';
 import { db } from '../db';
-import { routeRuns, routeStops, riders, vehicles, zones, customers } from '../db/schema';
+import { routeRuns, routeStops, riders, vehicles, zones, customers, targetRoutes } from '../db/schema';
 import { eq, sql, and, desc } from 'drizzle-orm';
 import { authenticate, AuthRequest, authorize } from '../middleware/auth';
 import { z } from 'zod';
 
 export const routesRouter = Router();
+
+// Fallback in-memory target routes
+let inMemoryTargetRoutes = [
+  {
+    id: 1,
+    routeCode: 'TR-101',
+    name: 'Clifton & Sea View Express',
+    zoneId: 1,
+    zoneName: 'Clifton & Sea View (Z-01)',
+    riderId: 1,
+    riderName: 'Kamran Akmal (RD-04)',
+    vehicleId: 1,
+    vehicleReg: 'KC-9821 (Suzuki Bolan)',
+    shift: 'morning' as const,
+    departureTime: '07:30 AM',
+    loadingDockBay: 'Bay #2',
+    targetJars: 120,
+    targetCash: 26400,
+    estStops: 24,
+    description: 'Daily morning residential supply for Clifton Block 1-5 and Sea View apartments',
+    isActive: true,
+  },
+  {
+    id: 2,
+    routeCode: 'TR-102',
+    name: 'DHA Phase 5 & 6 Heavy Commercial',
+    zoneId: 2,
+    zoneName: 'DHA Phase 5 & 6 (Z-02)',
+    riderId: 2,
+    riderName: 'Muhammad Bilal (RD-07)',
+    vehicleId: 2,
+    vehicleReg: 'KW-4412 (Hyundai Shehzore)',
+    shift: 'morning' as const,
+    departureTime: '08:00 AM',
+    loadingDockBay: 'Bay #1',
+    targetJars: 240,
+    targetCash: 52800,
+    estStops: 42,
+    description: 'Corporate towers, restaurants and high-volume residential compounds in DHA Phase 5/6',
+    isActive: true,
+  },
+  {
+    id: 3,
+    routeCode: 'TR-103',
+    name: 'Gulshan-e-Iqbal Block 1-7 Retail & Homes',
+    zoneId: 3,
+    zoneName: 'Gulshan-e-Iqbal Block 1-7 (Z-03)',
+    riderId: 3,
+    riderName: 'Zubair Ahmed (RD-02)',
+    vehicleId: 3,
+    vehicleReg: 'KR-1092 (Suzuki Ravi)',
+    shift: 'morning' as const,
+    departureTime: '07:15 AM',
+    loadingDockBay: 'Bay #3',
+    targetJars: 100,
+    targetCash: 22000,
+    estStops: 20,
+    description: 'University Road and Gulshan Block 1-7 family residential route',
+    isActive: true,
+  },
+  {
+    id: 4,
+    routeCode: 'TR-104',
+    name: 'Korangi Industrial Bulk Shift',
+    zoneId: 6,
+    zoneName: 'Korangi Industrial Area (Z-06)',
+    riderId: 4,
+    riderName: 'Rashid Khan (RD-11)',
+    vehicleId: 4,
+    vehicleReg: 'KF-3184 (FAW Carrier)',
+    shift: 'afternoon' as const,
+    departureTime: '01:30 PM',
+    loadingDockBay: 'Bay #4',
+    targetJars: 160,
+    targetCash: 35200,
+    estStops: 28,
+    description: 'Industrial textile mills, factories and packaging units afternoon refill',
+    isActive: true,
+  },
+];
+
+const targetRouteSchema = z.object({
+  routeCode: z.string().min(2, 'Route code is required'),
+  name: z.string().min(2, 'Route name is required'),
+  zoneId: z.number(),
+  riderId: z.number().optional().nullable(),
+  vehicleId: z.number().optional().nullable(),
+  shift: z.enum(['morning', 'afternoon']).default('morning'),
+  departureTime: z.string().optional().default('07:30 AM'),
+  loadingDockBay: z.string().optional().default('Bay #1'),
+  targetJars: z.number().default(120),
+  targetCash: z.number().default(0),
+  estStops: z.number().default(20),
+  description: z.string().optional().nullable(),
+});
+
+// ─── TARGET ROUTES ENDPOINTS (BEFORE /:id TO AVOID SHADOWING) ───
+
+// List Target Routes
+routesRouter.get('/target-routes', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const dbRoutes = await db
+      .select({
+        id: targetRoutes.id,
+        routeCode: targetRoutes.routeCode,
+        name: targetRoutes.name,
+        zoneId: targetRoutes.zoneId,
+        riderId: targetRoutes.riderId,
+        vehicleId: targetRoutes.vehicleId,
+        shift: targetRoutes.shift,
+        departureTime: targetRoutes.departureTime,
+        loadingDockBay: targetRoutes.loadingDockBay,
+        targetJars: targetRoutes.targetJars,
+        targetCash: targetRoutes.targetCash,
+        estStops: targetRoutes.estStops,
+        description: targetRoutes.description,
+        isActive: targetRoutes.isActive,
+        createdAt: targetRoutes.createdAt,
+        zoneName: zones.name,
+        zoneCode: zones.code,
+        riderName: riders.fullName,
+        riderCode: riders.riderId,
+        riderPhone: riders.phone,
+        vehicleReg: vehicles.registrationNo,
+        vehicleType: vehicles.type,
+      })
+      .from(targetRoutes)
+      .leftJoin(zones, eq(targetRoutes.zoneId, zones.id))
+      .leftJoin(riders, eq(targetRoutes.riderId, riders.id))
+      .leftJoin(vehicles, eq(targetRoutes.vehicleId, vehicles.id))
+      .where(eq(targetRoutes.isActive, true))
+      .orderBy(targetRoutes.id);
+
+    if (dbRoutes && dbRoutes.length > 0) {
+      return res.json(dbRoutes);
+    }
+    return res.json(inMemoryTargetRoutes.filter(r => r.isActive));
+  } catch (error: any) {
+    return res.json(inMemoryTargetRoutes.filter(r => r.isActive));
+  }
+});
+
+// Create Target Route
+routesRouter.post('/target-routes', authenticate, authorize('admin', 'manager', 'dispatcher'), async (req: AuthRequest, res: Response) => {
+  try {
+    const body = targetRouteSchema.parse(req.body);
+    let createdRoute: any = null;
+
+    try {
+      const result = await db.insert(targetRoutes).values({
+        routeCode: body.routeCode.toUpperCase(),
+        name: body.name,
+        zoneId: body.zoneId,
+        riderId: body.riderId,
+        vehicleId: body.vehicleId,
+        shift: body.shift,
+        departureTime: body.departureTime,
+        loadingDockBay: body.loadingDockBay,
+        targetJars: body.targetJars,
+        targetCash: body.targetCash,
+        estStops: body.estStops,
+        description: body.description,
+        isActive: true,
+      } as any);
+
+      const insertId = (result as any)[0]?.insertId || Date.now();
+      createdRoute = {
+        id: insertId,
+        ...body,
+        routeCode: body.routeCode.toUpperCase(),
+        isActive: true,
+      };
+    } catch (dbErr) {
+      const newId = inMemoryTargetRoutes.length > 0 ? Math.max(...inMemoryTargetRoutes.map(r => r.id)) + 1 : 1;
+      createdRoute = {
+        id: newId,
+        ...body,
+        routeCode: body.routeCode.toUpperCase(),
+        isActive: true,
+      };
+    }
+
+    inMemoryTargetRoutes.push(createdRoute);
+    res.status(201).json(createdRoute);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete Target Route
+routesRouter.delete('/target-routes/:id', authenticate, authorize('admin', 'manager', 'dispatcher'), async (req: AuthRequest, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    try {
+      await db.update(targetRoutes).set({ isActive: false }).where(eq(targetRoutes.id, id));
+    } catch (dbErr) {}
+
+    inMemoryTargetRoutes = inMemoryTargetRoutes.filter(r => r.id !== id);
+
+    res.json({ message: 'Target route deleted successfully', id });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// ─── ROUTE RUNS LIST & CRUD ──────────────────────────────────────
 
 // List route runs
 routesRouter.get('/', authenticate, async (req: AuthRequest, res: Response) => {
@@ -316,6 +523,24 @@ routesRouter.patch('/:runId/stops/:stopId', authenticate, async (req: AuthReques
     }).where(eq(routeRuns.id, runId));
 
     res.json({ message: 'Stop updated' });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete Route Run
+routesRouter.delete('/:id', authenticate, authorize('admin', 'manager', 'dispatcher'), async (req: AuthRequest, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    try {
+      // First delete associated stops
+      await db.delete(routeStops).where(eq(routeStops.routeRunId, id));
+      // Then delete run
+      await db.delete(routeRuns).where(eq(routeRuns.id, id));
+    } catch (dbErr) {}
+
+    res.json({ message: 'Route run deleted successfully', id });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }

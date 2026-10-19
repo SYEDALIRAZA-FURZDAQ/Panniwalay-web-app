@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
-@layer base {
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+/* Enable class-based dark mode in Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *));
 
+@layer base {
   :root {
     --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -68,6 +69,11 @@
     border-color: var(--border-subtle);
   }
 
+  html {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+  }
+
   body {
     background-color: var(--bg-main);
     color: var(--text-primary);
@@ -75,6 +81,7 @@
     min-height: 100vh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -92,6 +99,7 @@
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
   box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(2, 132, 199, 0.05);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .glass-panel-hover:hover {

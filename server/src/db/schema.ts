@@ -86,6 +86,26 @@ export const riders = mysqlTable('riders', {
   updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
 });
 
+// ─── TARGET ROUTES ────────────────────────────────────────────────
+export const targetRoutes = mysqlTable('target_routes', {
+  id: int('id').primaryKey().autoincrement(),
+  routeCode: varchar('route_code', { length: 30 }).notNull().unique(), // e.g. TR-101
+  name: varchar('name', { length: 255 }).notNull(), // e.g. DHA Phase 5 & 6 Express
+  zoneId: int('zone_id').references(() => zones.id),
+  riderId: int('rider_id').references(() => riders.id),
+  vehicleId: int('vehicle_id').references(() => vehicles.id),
+  shift: mysqlEnum('shift', ['morning', 'afternoon']).default('morning'),
+  departureTime: varchar('departure_time', { length: 20 }).default('07:30 AM'),
+  loadingDockBay: varchar('loading_dock_bay', { length: 50 }).default('Bay #1'),
+  targetJars: int('target_jars').default(120),
+  targetCash: bigint('target_cash', { mode: 'number' }).default(0),
+  estStops: int('est_stops').default(25),
+  description: text('description'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().onUpdateNow().notNull(),
+});
+
 // ─── CUSTOMERS ────────────────────────────────────────────────────
 export const customers = mysqlTable('customers', {
   id: int('id').primaryKey().autoincrement(),
@@ -385,4 +405,10 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
 
 export const expenseVouchersRelations = relations(expenseVouchers, ({ one }) => ({
   expenseHead: one(expenseHeads, { fields: [expenseVouchers.expenseHeadId], references: [expenseHeads.id] }),
+}));
+
+export const targetRoutesRelations = relations(targetRoutes, ({ one }) => ({
+  zone: one(zones, { fields: [targetRoutes.zoneId], references: [zones.id] }),
+  rider: one(riders, { fields: [targetRoutes.riderId], references: [riders.id] }),
+  vehicle: one(vehicles, { fields: [targetRoutes.vehicleId], references: [vehicles.id] }),
 }));

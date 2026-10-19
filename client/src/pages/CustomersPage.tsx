@@ -128,6 +128,14 @@ export const CustomersPage: React.FC = () => {
   const [inviteCategory, setInviteCategory] = useState<'residential' | 'corporate'>('residential');
   const [inviteQuota, setInviteQuota] = useState(2);
   const [inviteExpiryHours, setInviteExpiryHours] = useState(168); // 7 days
+  const [zonesList, setZonesList] = useState<Array<{ id: number; name: string; code: string; sector?: string }>>([
+    { id: 1, name: 'Clifton & Sea View', code: 'Z-01', sector: 'South' },
+    { id: 2, name: 'DHA Phase 5 & 6', code: 'Z-02', sector: 'South' },
+    { id: 3, name: 'Gulshan-e-Iqbal Block 1-7', code: 'Z-03', sector: 'East' },
+    { id: 4, name: 'PECHS & Tariq Road', code: 'Z-04', sector: 'East' },
+    { id: 5, name: 'North Nazimabad Block A-D', code: 'Z-05', sector: 'Central' },
+    { id: 6, name: 'Korangi Industrial Area', code: 'Z-06', sector: 'Korangi' },
+  ]);
 
   const [generatedLink, setGeneratedLink] = useState<{
     url: string;
@@ -148,6 +156,67 @@ export const CustomersPage: React.FC = () => {
     address: '',
     refillCycle: 'Weekly',
   });
+
+  // Fetch live customers from API and merge any newly registered accounts
+  const loadCustomers = async () => {
+    try {
+      const res = await fetch('/api/customers');
+      if (res.ok) {
+        const result = await res.json();
+        if (result && Array.isArray(result.data) && result.data.length > 0) {
+          const apiCustomers: CustomerItem[] = result.data.map((item: any) => ({
+            id: item.id,
+            customerCode: item.customerCode,
+            fullName: item.fullName,
+            phone: item.phone,
+            email: item.email || '',
+            type: item.type || 'residential',
+            zoneName: item.zoneName || 'Clifton & Sea View (Z-01)',
+            jarQuota: item.jarQuota || 2,
+            jarsInCirculation: item.jarsInCirculation || 0,
+            depositHeld: item.depositHeld || 0,
+            refillCycle: item.refillCycle === 'twice_weekly' ? 'Twice Weekly' : item.refillCycle === 'on_call' ? 'On Call' : 'Weekly',
+            status: item.status || 'active',
+            address: item.address || '',
+          }));
+
+          // Merge with any newly onboarded accounts in localStorage
+          const localNew = JSON.parse(localStorage.getItem('panniwalay_new_customers') || '[]');
+          const existingCodes = new Set(apiCustomers.map(c => c.customerCode));
+          const uniqueLocal = localNew.filter((c: any) => !existingCodes.has(c.customerCode));
+
+          setCustomers([...uniqueLocal, ...apiCustomers]);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('API customers load fallback:', e);
+    }
+
+    // Fallback: check localStorage
+    try {
+      const localNew = JSON.parse(localStorage.getItem('panniwalay_new_customers') || '[]');
+      if (localNew.length > 0) {
+        setCustomers((prev) => {
+          const codes = new Set(prev.map(c => c.customerCode));
+          const add = localNew.filter((c: any) => !codes.has(c.customerCode));
+          return [...add, ...prev];
+        });
+      }
+    } catch (e) {}
+  };
+
+  React.useEffect(() => {
+    loadCustomers();
+    fetch('/api/zones')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setZonesList(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleGenerateLink = async () => {
     try {
@@ -188,7 +257,7 @@ export const CustomersPage: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleAddCustomer = (e: React.FormEvent) => {
+  const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     const created: CustomerItem = {
       id: Date.now(),
@@ -206,7 +275,32 @@ export const CustomersPage: React.FC = () => {
       address: newCust.address,
     };
 
-    setCustomers([...customers, created]);
+    // Save to database via API
+    try {
+      await fetch('/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: newCust.fullName,
+          phone: newCust.phone,
+          email: newCust.email || undefined,
+          type: newCust.type,
+          zoneId: 1,
+          jarQuota: Number(newCust.jarQuota),
+          address: newCust.address,
+          refillCycle: 'weekly',
+        }),
+      });
+    } catch (e) {}
+
+    // Save to local storage cache as well
+    try {
+      const existing = JSON.parse(localStorage.getItem('panniwalay_new_customers') || '[]');
+      existing.unshift(created);
+      localStorage.setItem('panniwalay_new_customers', JSON.stringify(existing));
+    } catch (e) {}
+
+    setCustomers([created, ...customers]);
     setShowAddModal(false);
   };
 
@@ -446,12 +540,11 @@ export const CustomersPage: React.FC = () => {
                     onChange={(e) => setInviteZone(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium"
                   >
-                    <option value="1">Clifton & Sea View (Z-01)</option>
-                    <option value="2">DHA Phase 5 & 6 (Z-02)</option>
-                    <option value="3">Gulshan-e-Iqbal Block 1-7 (Z-03)</option>
-                    <option value="4">PECHS & Tariq Road (Z-04)</option>
-                    <option value="5">North Nazimabad Block A-D (Z-05)</option>
-                    <option value="6">Korangi Industrial Area (Z-06)</option>
+                    {zonesList.map((z) => (
+                      <option key={z.id} value={z.id}>
+                        {z.name} ({z.code}) {z.sector ? `— ${z.sector}` : ''}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -725,11 +818,11 @@ export const CustomersPage: React.FC = () => {
                   onChange={(e) => setNewCust({ ...newCust, zoneName: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
                 >
-                  <option value="Clifton & Sea View (Z-01)">Clifton & Sea View (Z-01)</option>
-                  <option value="DHA Phase 5 & 6 (Z-02)">DHA Phase 5 & 6 (Z-02)</option>
-                  <option value="Gulshan-e-Iqbal Block 1-7 (Z-03)">Gulshan-e-Iqbal Block 1-7 (Z-03)</option>
-                  <option value="PECHS & Tariq Road (Z-04)">PECHS & Tariq Road (Z-04)</option>
-                  <option value="Korangi Industrial Area (Z-06)">Korangi Industrial Area (Z-06)</option>
+                  {zonesList.map((z) => (
+                    <option key={z.id} value={`${z.name} (${z.code})`}>
+                      {z.name} ({z.code}) {z.sector ? `— ${z.sector}` : ''}
+                    </option>
+                  ))}
                 </select>
               </div>
 

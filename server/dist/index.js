@@ -22,6 +22,7 @@ const settings_1 = require("./routes/settings");
 const dashboard_1 = require("./routes/dashboard");
 const invites_1 = require("./routes/invites");
 const onboarding_1 = require("./routes/onboarding");
+const zones_1 = require("./routes/zones");
 exports.logger = (0, pino_1.default)({
     transport: process.env.NODE_ENV === 'development'
         ? { target: 'pino-pretty', options: { colorize: true } }
@@ -65,6 +66,7 @@ app.use('/api/accounts', accounts_1.accountsRouter);
 app.use('/api/settings', settings_1.settingsRouter);
 app.use('/api/invites', invites_1.invitesRouter);
 app.use('/api/onboarding', onboarding_1.onboardingRouter);
+app.use('/api/zones', zones_1.zonesRouter);
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString(), app: 'Panniwalay ERP' });

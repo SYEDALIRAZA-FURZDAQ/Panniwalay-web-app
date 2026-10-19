@@ -128,6 +128,25 @@ export const RidersPage: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [handoverRider, setHandoverRider] = useState<RiderItem | null>(null);
   const [handoverAmount, setHandoverAmount] = useState<number>(0);
+  const [zonesList, setZonesList] = useState<Array<{ id: number; name: string; code: string; sector?: string }>>([
+    { id: 1, name: 'Clifton & Sea View', code: 'Z-01', sector: 'South' },
+    { id: 2, name: 'DHA Phase 5 & 6', code: 'Z-02', sector: 'South' },
+    { id: 3, name: 'Gulshan-e-Iqbal Block 1-7', code: 'Z-03', sector: 'East' },
+    { id: 4, name: 'PECHS & Tariq Road', code: 'Z-04', sector: 'East' },
+    { id: 5, name: 'North Nazimabad Block A-D', code: 'Z-05', sector: 'Central' },
+    { id: 6, name: 'Korangi Industrial Area', code: 'Z-06', sector: 'Korangi' },
+  ]);
+
+  useEffect(() => {
+    fetch('/api/zones')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setZonesList(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // New Rider Form
   const [newRider, setNewRider] = useState({
@@ -456,11 +475,11 @@ export const RidersPage: React.FC = () => {
                   onChange={(e) => setNewRider({ ...newRider, zoneName: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
                 >
-                  <option value="Clifton & Sea View (Z-01)">Clifton & Sea View (Z-01)</option>
-                  <option value="DHA Phase 5 & 6 (Z-02)">DHA Phase 5 & 6 (Z-02)</option>
-                  <option value="Gulshan-e-Iqbal Block 1-7 (Z-03)">Gulshan-e-Iqbal Block 1-7 (Z-03)</option>
-                  <option value="PECHS & Tariq Road (Z-04)">PECHS & Tariq Road (Z-04)</option>
-                  <option value="Korangi Industrial Area (Z-06)">Korangi Industrial Area (Z-06)</option>
+                  {zonesList.map((z) => (
+                    <option key={z.id} value={`${z.name} (${z.code})`}>
+                      {z.name} ({z.code}) {z.sector ? `— ${z.sector}` : ''}
+                    </option>
+                  ))}
                 </select>
               </div>
 

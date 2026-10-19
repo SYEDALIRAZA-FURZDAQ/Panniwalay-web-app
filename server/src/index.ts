@@ -17,6 +17,7 @@ import { settingsRouter } from './routes/settings';
 import { dashboardRouter } from './routes/dashboard';
 import { invitesRouter } from './routes/invites';
 import { onboardingRouter } from './routes/onboarding';
+import { zonesRouter } from './routes/zones';
 
 export const logger = pino({
   transport: process.env.NODE_ENV === 'development' 
@@ -68,6 +69,7 @@ app.use('/api/accounts', accountsRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/invites', invitesRouter);
 app.use('/api/onboarding', onboardingRouter);
+app.use('/api/zones', zonesRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

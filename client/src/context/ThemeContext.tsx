@@ -13,40 +13,70 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
+  const [theme, setThemeState] = useState<Theme>(() => {
     return (localStorage.getItem('panniwalay_theme') as Theme) || 'light';
   });
 
-  const [brandTint, setBrandTint] = useState<string>(() => {
+  const [brandTint, setBrandTintState] = useState<string>(() => {
     return localStorage.getItem('panniwalay_brand_tint') || '#0284c7';
   });
 
-  const [isDark, setIsDark] = useState<boolean>(false);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    const saved = localStorage.getItem('panniwalay_theme') as Theme;
+    if (saved === 'dark') return true;
+    if (saved === 'light') return false;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
 
-  useEffect(() => {
+  const applyTheme = (targetTheme: Theme) => {
     const root = document.documentElement;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const activeDark = targetTheme === 'dark' || (targetTheme === 'system' && mediaQuery.matches);
 
-    const updateTheme = () => {
-      const activeDark = theme === 'dark' || (theme === 'system' && mediaQuery.matches);
-      setIsDark(activeDark);
-      if (activeDark) {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
+    setIsDark(activeDark);
+
+    if (activeDark) {
+      root.classList.add('dark');
+      document.body.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
+      root.style.colorScheme = 'dark';
+    } else {
+      root.classList.remove('dark');
+      document.body.classList.remove('dark');
+      root.setAttribute('data-theme', 'light');
+      root.style.colorScheme = 'light';
+    }
+  };
+
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+    localStorage.setItem('panniwalay_theme', newTheme);
+    applyTheme(newTheme);
+  };
+
+  const setBrandTint = (tint: string) => {
+    setBrandTintState(tint);
+    document.documentElement.style.setProperty('--brand-primary', tint);
+    localStorage.setItem('panniwalay_brand_tint', tint);
+  };
+
+  useEffect(() => {
+    applyTheme(theme);
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleSystemChange = () => {
+      const current = localStorage.getItem('panniwalay_theme') as Theme;
+      if (current === 'system' || !current) {
+        applyTheme('system');
       }
     };
 
-    updateTheme();
-    localStorage.setItem('panniwalay_theme', theme);
-
-    mediaQuery.addEventListener('change', updateTheme);
-    return () => mediaQuery.removeEventListener('change', updateTheme);
-  }, [theme]);
+    mediaQuery.addEventListener('change', handleSystemChange);
+    return () => mediaQuery.removeEventListener('change', handleSystemChange);
+  }, []);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--brand-primary', brandTint);
-    localStorage.setItem('panniwalay_brand_tint', brandTint);
   }, [brandTint]);
 
   return (
