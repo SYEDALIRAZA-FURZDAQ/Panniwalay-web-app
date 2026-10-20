@@ -18,6 +18,9 @@ import {
   Calendar,
   X,
   ExternalLink,
+  Trash2,
+  AlertTriangle,
+  Eye,
 } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
 import { KpiCard } from '@/components/common/KpiCard';
@@ -156,6 +159,12 @@ export const CustomersPage: React.FC = () => {
     address: '',
     refillCycle: 'Weekly',
   });
+
+  // Delete Customer & Details Modal State
+  const [customerToDelete, setCustomerToDelete] = useState<CustomerItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteSuccessMsg, setDeleteSuccessMsg] = useState<string | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerItem | null>(null);
 
   // Fetch live customers from API and merge any newly registered accounts
   const loadCustomers = async () => {
@@ -304,6 +313,41 @@ export const CustomersPage: React.FC = () => {
     setShowAddModal(false);
   };
 
+  const handleDeleteCustomer = async () => {
+    if (!customerToDelete) return;
+    setIsDeleting(true);
+    const targetId = customerToDelete.id;
+    const targetCode = customerToDelete.customerCode;
+    const targetName = customerToDelete.fullName;
+
+    try {
+      await fetch(`/api/customers/${targetId}`, {
+        method: 'DELETE',
+      });
+    } catch (err) {
+      console.warn('API customer delete fallback:', err);
+    }
+
+    // Remove from localStorage
+    try {
+      const localNew = JSON.parse(localStorage.getItem('panniwalay_new_customers') || '[]');
+      const updated = localNew.filter((c: any) => c.id !== targetId && c.customerCode !== targetCode);
+      localStorage.setItem('panniwalay_new_customers', JSON.stringify(updated));
+    } catch (e) {}
+
+    // Remove from React state
+    setCustomers((prev) => prev.filter((c) => c.id !== targetId));
+
+    setCustomerToDelete(null);
+    setIsDeleting(false);
+    if (selectedCustomer?.id === targetId) {
+      setSelectedCustomer(null);
+    }
+
+    setDeleteSuccessMsg(`Customer "${targetName}" (${targetCode}) was removed successfully.`);
+    setTimeout(() => setDeleteSuccessMsg(null), 4000);
+  };
+
   const filtered = customers.filter((c) => {
     if (typeFilter !== 'all' && c.type !== typeFilter) return false;
     if (
@@ -323,6 +367,22 @@ export const CustomersPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Delete Success Alert Banner */}
+      {deleteSuccessMsg && (
+        <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center justify-between text-xs shadow-xs animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span className="font-semibold">{deleteSuccessMsg}</span>
+          </div>
+          <button
+            onClick={() => setDeleteSuccessMsg(null)}
+            className="text-emerald-600 hover:text-emerald-800 p-1 rounded-lg"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -492,12 +552,24 @@ export const CustomersPage: React.FC = () => {
                     )}
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <button
-                      onClick={() => alert(`Customer: ${c.fullName}\nAddress: ${c.address}\nDeposit: PKR ${c.depositHeld}`)}
-                      className="px-2.5 py-1 rounded-lg text-xs font-semibold text-sky-600 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/50"
-                    >
-                      View Details
-                    </button>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        onClick={() => setSelectedCustomer(c)}
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold text-sky-600 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/50 transition-colors inline-flex items-center gap-1"
+                        title="View Details"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Details</span>
+                      </button>
+                      <button
+                        onClick={() => setCustomerToDelete(c)}
+                        className="px-2 py-1 rounded-lg text-xs font-semibold text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors inline-flex items-center gap-1"
+                        title="Remove Customer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Remove</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -854,6 +926,164 @@ export const CustomersPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Delete Confirmation Modal */}
+      {customerToDelete && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="glass-panel rounded-2xl max-w-md w-full p-6 space-y-4 bg-white dark:bg-[#131c31] border border-rose-200 dark:border-rose-900/50 shadow-2xl">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Remove Customer Account?
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Are you sure you want to remove <span className="font-semibold text-slate-900 dark:text-white">{customerToDelete.fullName}</span> (<span className="font-mono text-sky-600">{customerToDelete.customerCode}</span>)?
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5 text-slate-600 dark:text-slate-400">
+              <div className="flex justify-between">
+                <span>Delivery Zone:</span>
+                <span className="font-medium text-slate-900 dark:text-white">{customerToDelete.zoneName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Bottles in Circulation:</span>
+                <span className="font-medium text-slate-900 dark:text-white">{customerToDelete.jarsInCirculation} jars</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Deposit Held in Escrow:</span>
+                <span className="font-bold text-sky-600 dark:text-sky-400">{formatMoney(customerToDelete.depositHeld)}</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-400">
+              This action will deactivate the customer registry entry and remove them from future route allocations.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setCustomerToDelete(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeleteCustomer}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-rose-600/20 transition-all cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{isDeleting ? 'Removing...' : 'Confirm Remove'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Customer Details Modal */}
+      {selectedCustomer && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="glass-panel rounded-2xl max-w-lg w-full p-6 space-y-4 bg-white dark:bg-[#131c31] border border-slate-200 dark:border-slate-700 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-sky-600 font-mono">
+                  {selectedCustomer.customerCode}
+                </span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {selectedCustomer.fullName}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedCustomer(null)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                  <span className="text-slate-400 text-[11px] block">Category</span>
+                  <span className="font-semibold capitalize text-slate-900 dark:text-white">
+                    {selectedCustomer.type} Account
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                  <span className="text-slate-400 text-[11px] block">Account Status</span>
+                  <span className="font-semibold capitalize text-emerald-600 dark:text-emerald-400">
+                    {selectedCustomer.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-2">
+                <div>
+                  <span className="text-slate-400 text-[11px] block">Contact Phone</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{selectedCustomer.phone}</span>
+                </div>
+                {selectedCustomer.email && (
+                  <div>
+                    <span className="text-slate-400 text-[11px] block">Email Address</span>
+                    <span className="font-medium text-slate-900 dark:text-white">{selectedCustomer.email}</span>
+                  </div>
+                )}
+                <div>
+                  <span className="text-slate-400 text-[11px] block">Karachi Sector / Zone</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{selectedCustomer.zoneName}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[11px] block">Street / Delivery Address</span>
+                  <span className="font-medium text-slate-900 dark:text-white">{selectedCustomer.address || 'Address on file'}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                  <span className="text-slate-400 text-[10px] block">Jar Quota</span>
+                  <span className="font-bold text-sm text-slate-900 dark:text-white">{selectedCustomer.jarQuota}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                  <span className="text-slate-400 text-[10px] block">In Circulation</span>
+                  <span className="font-bold text-sm text-slate-900 dark:text-white">{selectedCustomer.jarsInCirculation}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                  <span className="text-slate-400 text-[10px] block">Deposit Held</span>
+                  <span className="font-bold text-sm text-sky-600 dark:text-sky-400">{formatMoney(selectedCustomer.depositHeld)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  const toDelete = selectedCustomer;
+                  setSelectedCustomer(null);
+                  setCustomerToDelete(toDelete);
+                }}
+                className="px-3 py-1.5 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Remove Account</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedCustomer(null)}
+                className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-bold hover:opacity-90 cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

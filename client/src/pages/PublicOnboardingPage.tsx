@@ -49,6 +49,11 @@ export const PublicOnboardingPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [assignedCode, setAssignedCode] = useState('');
 
+  // Dynamic pricing — loaded from settings, NOT hardcoded
+  const [standardDepositPerJar, setStandardDepositPerJar] = useState(0); // start at 0, will load dynamically
+  const [refillPricePerJar, setRefillPricePerJar] = useState(220);
+  const [pricingLoaded, setPricingLoaded] = useState(false);
+
   // Fetch live zones
   useEffect(() => {
     fetch('/api/zones')
@@ -61,7 +66,34 @@ export const PublicOnboardingPage: React.FC = () => {
       .catch(() => {});
   }, []);
 
-  // Pre-fetch invite defaults if available
+  // Fetch dynamic pricing from public settings endpoint
+  useEffect(() => {
+    fetch('/api/settings/public')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          if (data['pricing.standardDeposit'] != null) setStandardDepositPerJar(Number(data['pricing.standardDeposit']));
+          if (data['pricing.standardRefill'] != null) setRefillPricePerJar(Number(data['pricing.standardRefill']));
+          setPricingLoaded(true);
+        }
+      })
+      .catch(() => {
+        // Fallback: try localStorage
+        try {
+          const cached = localStorage.getItem('panniwalay_settings');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed.bottleSettings) {
+              setStandardDepositPerJar(parsed.bottleSettings.standardDeposit ?? 0);
+              setRefillPricePerJar(parsed.bottleSettings.standardRefill ?? 220);
+            }
+          }
+        } catch {}
+        setPricingLoaded(true);
+      });
+  }, []);
+
+  // Pre-fetch invite defaults if available (also carries pricing)
   useEffect(() => {
     if (token) {
       fetch(`/api/onboarding/verify?token=${token}`)
@@ -72,15 +104,17 @@ export const PublicOnboardingPage: React.FC = () => {
             if (data.zoneName) setZoneName(data.zoneName);
             if (data.preassignedCategory) setAccountType(data.preassignedCategory);
             if (data.preassignedJarQuota) setJarQuota(data.preassignedJarQuota);
+            // Update pricing from verify response (server-authoritative)
+            if (data.standardDepositPerJar != null) setStandardDepositPerJar(Number(data.standardDepositPerJar));
+            if (data.refillPricePerJar != null) setRefillPricePerJar(Number(data.refillPricePerJar));
+            setPricingLoaded(true);
           }
         })
         .catch(() => {});
     }
   }, [token]);
 
-  // Pricing calculations
-  const standardDepositPerJar = 1000;
-  const refillPricePerJar = 220;
+  // Pricing calculations (dynamic — driven by settings)
   const totalDepositEscrow = jarQuota * standardDepositPerJar;
   const initialRefillTotal = jarQuota * refillPricePerJar;
   const grandTotalOnFirstDelivery = totalDepositEscrow + initialRefillTotal;
@@ -491,11 +525,19 @@ export const PublicOnboardingPage: React.FC = () => {
             {/* Transparent Escrow Breakdown */}
             <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-700 space-y-2.5 text-xs">
               <div className="flex justify-between items-center text-slate-300">
-                <span>Refundable Bottle Escrow ({jarQuota} x PKR 1,000):</span>
-                <span className="font-semibold text-white">PKR {totalDepositEscrow.toLocaleString()}</span>
+                <span>
+                  Refundable Bottle Escrow ({jarQuota} x PKR {standardDepositPerJar.toLocaleString()}):
+                </span>
+                <span className="font-semibold text-white">
+                  {totalDepositEscrow === 0 ? (
+                    <span className="text-emerald-400 font-bold">WAIVED</span>
+                  ) : (
+                    `PKR ${totalDepositEscrow.toLocaleString()}`
+                  )}
+                </span>
               </div>
               <div className="flex justify-between items-center text-slate-300">
-                <span>First Filled 19L Bottles ({jarQuota} x PKR 220):</span>
+                <span>First Filled 19L Bottles ({jarQuota} x PKR {refillPricePerJar.toLocaleString()}):</span>
                 <span className="font-semibold text-white">PKR {initialRefillTotal.toLocaleString()}</span>
               </div>
               <div className="pt-2 border-t border-slate-700 flex justify-between items-center text-sm font-bold">
@@ -504,9 +546,15 @@ export const PublicOnboardingPage: React.FC = () => {
                   PKR {grandTotalOnFirstDelivery.toLocaleString()}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 pt-1">
-                * The PKR {totalDepositEscrow.toLocaleString()} bottle security deposit is 100% refundable upon account closing and return of bottles.
-              </p>
+              {totalDepositEscrow > 0 ? (
+                <p className="text-[11px] text-slate-400 pt-1">
+                  * The PKR {totalDepositEscrow.toLocaleString()} bottle security deposit is 100% refundable upon account closing and return of bottles.
+                </p>
+              ) : (
+                <p className="text-[11px] text-emerald-400/80 pt-1">
+                  ✓ No bottle security deposit required — deposit has been waived by plant administration.
+                </p>
+              )}
             </div>
 
             <div className="flex justify-between pt-3">

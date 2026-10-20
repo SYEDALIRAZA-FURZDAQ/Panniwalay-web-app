@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Settings,
   Building2,
@@ -34,6 +34,7 @@ export const SettingsPage: React.FC = () => {
   const { currency, setCurrency, rates } = useCurrency();
   const [activeTab, setActiveTab] = useState<'plant' | 'theme' | 'currency' | 'bottles' | 'zones'>('plant');
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Delivery Zones State
   const [zonesList, setZonesList] = useState<Array<{ id: number; name: string; code: string; sector?: string; city?: string; totalStops?: number }>>([
@@ -112,8 +113,76 @@ export const SettingsPage: React.FC = () => {
     EUR: rates.EUR || 0.0033,
   });
 
-  const handleSave = (e: React.FormEvent) => {
+  // ── Load saved settings from API (and localStorage fallback) on mount ──
+  useEffect(() => {
+    // Try localStorage first for instant load
+    try {
+      const cached = localStorage.getItem('panniwalay_settings');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.bottleSettings) setBottleSettings(parsed.bottleSettings);
+        if (parsed.plantSettings) setPlantSettings(parsed.plantSettings);
+      }
+    } catch {}
+
+    // Then fetch from API (source of truth) to override
+    fetch('/api/settings')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setBottleSettings((prev) => ({
+            ...prev,
+            standardDeposit: data['pricing.standardDeposit'] != null ? Number(data['pricing.standardDeposit']) : prev.standardDeposit,
+            standardRefill: data['pricing.standardRefill'] != null ? Number(data['pricing.standardRefill']) : prev.standardRefill,
+            dispenserDeposit: data['pricing.dispenserDeposit'] != null ? Number(data['pricing.dispenserDeposit']) : prev.dispenserDeposit,
+          }));
+          setPlantSettings((prev) => ({
+            ...prev,
+            name: data['plant.name'] || prev.name,
+            address: data['plant.address'] || prev.address,
+            phone: data['plant.phone'] || prev.phone,
+            emergencyPhone: data['plant.emergencyContact'] || prev.emergencyPhone,
+          }));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSaving(true);
+
+    // Build the settings payload to send to API
+    const settingsPayload: Record<string, string> = {
+      'plant.name': plantSettings.name,
+      'plant.address': plantSettings.address,
+      'plant.phone': plantSettings.phone,
+      'plant.emergencyContact': plantSettings.emergencyPhone,
+      'pricing.standardDeposit': String(bottleSettings.standardDeposit),
+      'pricing.standardRefill': String(bottleSettings.standardRefill),
+      'pricing.dispenserDeposit': String(bottleSettings.dispenserDeposit),
+    };
+
+    // Save to localStorage (for instant client-side access)
+    try {
+      localStorage.setItem(
+        'panniwalay_settings',
+        JSON.stringify({ bottleSettings, plantSettings })
+      );
+    } catch {}
+
+    // POST to API to persist on the server
+    try {
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settingsPayload),
+      });
+    } catch (err) {
+      console.warn('Settings API save warning:', err);
+    }
+
+    setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };

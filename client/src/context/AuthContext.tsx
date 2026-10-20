@@ -4,6 +4,8 @@ export interface User {
   id: number;
   fullName: string;
   email: string;
+  plantName?: string;
+  tenantId?: string;
   role: string;
   phone?: string;
 }
@@ -11,33 +13,25 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, pass: string) => Promise<boolean>;
+  login: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
+  switchUser: (targetUser: User) => void;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Default mock admin user for immediate seamless access
-const DEFAULT_USER: User = {
-  id: 1,
-  fullName: 'Tariq Mansoor',
-  email: 'admin@panniwalay.pk',
-  role: 'admin',
-  phone: '+92-300-8291444',
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('panniwalay_user');
-    if (saved) {
-      try {
+    try {
+      const saved = localStorage.getItem('panniwalay_user');
+      if (saved) {
         return JSON.parse(saved);
-      } catch (e) {
-        return DEFAULT_USER;
       }
+    } catch (e) {
+      console.warn('Failed to parse cached user:', e);
     }
-    return DEFAULT_USER;
+    return null;
   });
 
   const [loading, setLoading] = useState(false);
@@ -47,59 +41,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('panniwalay_user', JSON.stringify(user));
     } else {
       localStorage.removeItem('panniwalay_user');
+      localStorage.removeItem('panniwalay_token');
     }
   }, [user]);
 
-  const login = async (email: string, pass: string): Promise<boolean> => {
+  const login = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
     setLoading(true);
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password: pass }),
+        body: JSON.stringify({ email: email.trim(), password: pass }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+
+      if (res.ok && data.user) {
         setUser(data.user);
+        if (data.accessToken) {
+          localStorage.setItem('panniwalay_token', data.accessToken);
+        }
         setLoading(false);
-        return true;
+        return { success: true };
+      } else {
+        setLoading(false);
+        return { success: false, error: data.error || 'Invalid email or password' };
       }
-    } catch (e) {
-      console.warn('API login failed, falling back to local credentials');
-    }
-
-    // Fallback demo credentials check
-    if (email.includes('admin') || email === 'demo@panniwalay.pk') {
-      setUser({
-        id: 1,
-        fullName: 'Tariq Mansoor (Plant Admin)',
-        email,
-        role: 'admin',
-        phone: '+92-300-8291444',
-      });
+    } catch (e: any) {
+      console.warn('Network error during login:', e);
       setLoading(false);
-      return true;
+      return { success: false, error: 'Cannot connect to server. Please try again.' };
     }
-
-    setUser({
-      id: 2,
-      fullName: 'Fleet Dispatcher',
-      email,
-      role: 'dispatcher',
-      phone: '+92-321-9876543',
-    });
-    setLoading(false);
-    return true;
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('panniwalay_user');
+    localStorage.removeItem('panniwalay_token');
     fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
   };
 
+  const switchUser = (targetUser: User) => {
+    setUser(targetUser);
+    localStorage.setItem('panniwalay_user', JSON.stringify(targetUser));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        login,
+        logout,
+        switchUser,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

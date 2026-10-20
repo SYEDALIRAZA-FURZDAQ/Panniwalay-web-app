@@ -10,13 +10,26 @@ const db_1 = require("../db");
 const schema_1 = require("../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
 const zod_1 = require("zod");
+const settings_1 = require("./settings");
 exports.onboardingRouter = (0, express_1.Router)();
 // Step 1: Verify token (Optional verification)
+// Also returns dynamic pricing from settings so the client never needs to hardcode prices.
 exports.onboardingRouter.get('/verify', async (req, res) => {
     try {
+        // Fetch current pricing from settings
+        const standardDepositPerJar = parseInt(await (0, settings_1.getSettingValue)('pricing.standardDeposit', '1000'), 10);
+        const refillPricePerJar = parseInt(await (0, settings_1.getSettingValue)('pricing.standardRefill', '220'), 10);
         const { token } = req.query;
         if (!token) {
-            return res.json({ valid: true, preassignedZoneId: 1, zoneName: 'Clifton & Sea View (Z-01)', preassignedCategory: 'residential', preassignedJarQuota: 2 });
+            return res.json({
+                valid: true,
+                preassignedZoneId: 1,
+                zoneName: 'Clifton & Sea View (Z-01)',
+                preassignedCategory: 'residential',
+                preassignedJarQuota: 2,
+                standardDepositPerJar,
+                refillPricePerJar,
+            });
         }
         const tokenHash = crypto_1.default.createHash('sha256').update(token).digest('hex');
         const [invite] = await db_1.db
@@ -40,6 +53,8 @@ exports.onboardingRouter.get('/verify', async (req, res) => {
                 zoneName: invite.zoneName || 'Clifton & Sea View (Z-01)',
                 preassignedCategory: invite.preassignedCategory || 'residential',
                 preassignedJarQuota: invite.preassignedJarQuota || 2,
+                standardDepositPerJar,
+                refillPricePerJar,
             });
         }
         // Allow direct onboarding even if token is custom / demo
@@ -49,15 +64,27 @@ exports.onboardingRouter.get('/verify', async (req, res) => {
             zoneName: 'Clifton & Sea View (Z-01)',
             preassignedCategory: 'residential',
             preassignedJarQuota: 2,
+            standardDepositPerJar,
+            refillPricePerJar,
         });
     }
     catch (error) {
+        // Fallback — still serve dynamic pricing
+        let standardDepositPerJar = 1000;
+        let refillPricePerJar = 220;
+        try {
+            standardDepositPerJar = parseInt(await (0, settings_1.getSettingValue)('pricing.standardDeposit', '1000'), 10);
+            refillPricePerJar = parseInt(await (0, settings_1.getSettingValue)('pricing.standardRefill', '220'), 10);
+        }
+        catch { }
         res.json({
             valid: true,
             preassignedZoneId: 1,
             zoneName: 'Clifton & Sea View (Z-01)',
             preassignedCategory: 'residential',
             preassignedJarQuota: 2,
+            standardDepositPerJar,
+            refillPricePerJar,
         });
     }
 });
@@ -78,6 +105,10 @@ const registerCustomerSchema = zod_1.z.object({
 exports.onboardingRouter.post('/register', async (req, res) => {
     try {
         const body = registerCustomerSchema.parse(req.body);
+        // Fetch current deposit price from settings dynamically
+        const standardDepositPerJar = parseInt(await (0, settings_1.getSettingValue)('pricing.standardDeposit', '1000'), 10);
+        const jarQuota = body.jarQuota || 2;
+        const depositHeld = standardDepositPerJar * jarQuota;
         // If token is provided, mark invite as used if present
         if (body.token) {
             try {
@@ -107,29 +138,31 @@ exports.onboardingRouter.post('/register', async (req, res) => {
             email: body.email || null,
             type: body.type,
             zoneId: body.zoneId || 1,
-            jarQuota: body.jarQuota || 2,
+            jarQuota,
             address: body.address,
             landmark: body.landmark || null,
             deliveryNote: body.deliveryNote || null,
             refillCycle: body.refillCycle,
             status: 'active',
-            depositHeld: 1000 * (body.jarQuota || 2), // Standard deposit per jar in PKR
+            depositHeld, // Uses dynamic deposit from settings
             jarsInCirculation: 0,
         });
         const customerId = insertResult?.insertId || Math.floor(1000 + Math.random() * 9000);
-        // Record initial deposit entry in deposits ledger
-        try {
-            await db_1.db.insert(schema_1.deposits).values({
-                customerId,
-                amount: 1000 * (body.jarQuota || 2),
-                type: 'collect',
-                method: 'cash',
-                referenceNo: `INIT-DEP-${customerCode}`,
-                notes: 'Initial jar deposit collected on customer registration',
-            });
-        }
-        catch (depErr) {
-            console.warn('Initial deposit ledger entry warning:', depErr);
+        // Record initial deposit entry in deposits ledger (only if deposit > 0)
+        if (depositHeld > 0) {
+            try {
+                await db_1.db.insert(schema_1.deposits).values({
+                    customerId,
+                    amount: depositHeld,
+                    type: 'collect',
+                    method: 'cash',
+                    referenceNo: `INIT-DEP-${customerCode}`,
+                    notes: 'Initial jar deposit collected on customer registration',
+                });
+            }
+            catch (depErr) {
+                console.warn('Initial deposit ledger entry warning:', depErr);
+            }
         }
         res.status(201).json({
             success: true,
