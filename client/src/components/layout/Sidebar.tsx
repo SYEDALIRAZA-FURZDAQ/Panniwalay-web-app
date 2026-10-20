@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Navigation,
@@ -39,6 +39,7 @@ export const Sidebar: React.FC<{ isOpen?: boolean; onClose?: () => void }> = ({
   isOpen = true,
   onClose,
 }) => {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   return (
@@ -55,16 +56,16 @@ export const Sidebar: React.FC<{ isOpen?: boolean; onClose?: () => void }> = ({
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-600 to-sky-400 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
             <Droplets className="w-5 h-5 fill-white/20" />
           </div>
-          <div>
+          <div className="overflow-hidden">
             <h1 className="text-base font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
               Panniwalay
               <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300">
                 ERP
               </span>
             </h1>
-            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-              Plant #4 • Karachi
+            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1 truncate max-w-[150px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse shrink-0"></span>
+              <span className="truncate">{user?.plantName || 'Plant #4 • Karachi'}</span>
             </p>
           </div>
         </div>
@@ -140,9 +141,12 @@ export const Sidebar: React.FC<{ isOpen?: boolean; onClose?: () => void }> = ({
             </div>
           </div>
           <button
-            onClick={logout}
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
             title="Log Out"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
           </button>

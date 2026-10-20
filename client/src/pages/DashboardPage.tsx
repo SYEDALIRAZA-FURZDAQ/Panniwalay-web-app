@@ -15,10 +15,12 @@ import {
   Clock,
   CheckCircle2,
   RotateCw,
+  Sparkles,
 } from 'lucide-react';
 import { KpiCard } from '@/components/common/KpiCard';
 import { Badge } from '@/components/common/Badge';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface DashboardKpi {
   activeRoutes: number;
@@ -48,19 +50,40 @@ interface ActiveRun {
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const { formatMoney } = useCurrency();
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const isCleanTenant = !!(user?.tenantId && user.tenantId !== 'plant_default');
+  const [loading, setLoading] = useState(!isCleanTenant);
 
-  // Initial rich mock state matching design references with fallback
-  const [kpis, setKpis] = useState<DashboardKpi>({
-    activeRoutes: 6,
-    jarsOutForDelivery: 940,
-    activeRiders: 8,
-    emptyBottlesExpected: 820,
-    pendingCash: 184500,
-    totalCustomers: 412,
+  // Initial state based on active tenant
+  const [kpis, setKpis] = useState<DashboardKpi>(() => {
+    if (isCleanTenant) {
+      let custCount = 0;
+      try {
+        const saved = JSON.parse(localStorage.getItem(`panniwalay_customers_${user?.tenantId}`) || '[]');
+        custCount = saved.length;
+      } catch (e) {}
+      return {
+        activeRoutes: 0,
+        jarsOutForDelivery: 0,
+        activeRiders: 0,
+        emptyBottlesExpected: 0,
+        pendingCash: 0,
+        totalCustomers: custCount,
+      };
+    }
+    return {
+      activeRoutes: 6,
+      jarsOutForDelivery: 940,
+      activeRiders: 8,
+      emptyBottlesExpected: 820,
+      pendingCash: 184500,
+      totalCustomers: 412,
+    };
   });
 
-  const [activeRuns, setActiveRuns] = useState<ActiveRun[]>([
+  const [activeRuns, setActiveRuns] = useState<ActiveRun[]>(() => {
+    if (isCleanTenant) return [];
+    return [
     {
       id: 1,
       runNumber: 'R-101',
@@ -121,10 +144,16 @@ export const DashboardPage: React.FC = () => {
       completedStops: 6,
       totalStops: 28,
     },
-  ]);
+  ];
+});
 
   useEffect(() => {
-    // Try fetching live data from API
+    if (isCleanTenant) {
+      setLoading(false);
+      return;
+    }
+
+    // Try fetching live data from API for default plant
     fetch('/api/dashboard/kpis')
       .then((res) => res.json())
       .then((data) => {
@@ -150,10 +179,43 @@ export const DashboardPage: React.FC = () => {
         }
       })
       .catch(() => {});
-  }, []);
+  }, [isCleanTenant]);
 
   return (
     <div className="space-y-6">
+      {/* Clean Tenant Workspace Welcome Banner */}
+      {isCleanTenant && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-500/10 via-cyan-500/10 to-transparent border border-sky-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-sm">
+                Clean Isolated Workspace: {user?.plantName || 'New Plant'}
+              </h3>
+              <p className="text-slate-400">
+                Logged in as <span className="text-white font-medium">{user?.fullName}</span>. All customer accounts, routes, and billing operate independently in this workspace.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => navigate('/customers')}
+              className="px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow-xs transition-colors cursor-pointer"
+            >
+              + Register Customer
+            </button>
+            <button
+              onClick={() => navigate('/settings')}
+              className="px-3.5 py-1.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition-colors cursor-pointer"
+            >
+              Configure Plant Pricing
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Banner & Quick Actions */}
       <div className="glass-panel rounded-2xl p-6 bg-gradient-to-r from-sky-900 to-slate-900 text-white relative overflow-hidden">
         <div className="absolute right-0 top-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -163,10 +225,12 @@ export const DashboardPage: React.FC = () => {
               <span className="px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 text-xs font-semibold border border-sky-400/30">
                 Shift: Morning (07:00 - 15:00)
               </span>
-              <span className="text-slate-400 text-xs">Live Telemetry Active</span>
+              <span className="text-slate-400 text-xs">
+                {isCleanTenant ? 'Independent Workspace Node' : 'Live Telemetry Active'}
+              </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              Operations Hub — Karachi Plant #4
+              Operations Hub — {user?.plantName || 'Karachi Plant #4'}
             </h1>
             <p className="text-sm text-slate-300 max-w-2xl">
               Real-time monitoring of delivery runs, returnable bottle circulation, and route cash handovers across Karachi municipal sectors.

@@ -14,6 +14,8 @@ import {
   MapPin,
   Truck,
   RotateCcw,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
 import { KpiCard } from '@/components/common/KpiCard';
@@ -127,6 +129,7 @@ export const RidersPage: React.FC = () => {
   // Modals
   const [showAddModal, setShowAddModal] = useState(false);
   const [handoverRider, setHandoverRider] = useState<RiderItem | null>(null);
+  const [deleteRider, setDeleteRider] = useState<RiderItem | null>(null);
   const [handoverAmount, setHandoverAmount] = useState<number>(0);
   const [zonesList, setZonesList] = useState<Array<{ id: number; name: string; code: string; sector?: string }>>([
     { id: 1, name: 'Clifton & Sea View', code: 'Z-01', sector: 'South' },
@@ -400,15 +403,24 @@ export const RidersPage: React.FC = () => {
                     </div>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <button
-                      onClick={() => {
-                        setHandoverRider(rider);
-                        setHandoverAmount(rider.cashInHand);
-                      }}
-                      className="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950 dark:hover:bg-sky-900 dark:text-sky-300 font-semibold text-xs transition-colors cursor-pointer"
-                    >
-                      Cash Handover
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => {
+                          setHandoverRider(rider);
+                          setHandoverAmount(rider.cashInHand);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950 dark:hover:bg-sky-900 dark:text-sky-300 font-semibold text-xs transition-colors cursor-pointer"
+                      >
+                        Cash Handover
+                      </button>
+                      <button
+                        onClick={() => setDeleteRider(rider)}
+                        className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950 dark:hover:bg-rose-900 dark:text-rose-400 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Remove
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -571,6 +583,63 @@ export const RidersPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Rider Confirmation Modal */}
+      {deleteRider && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="glass-panel rounded-2xl max-w-sm w-full p-6 space-y-4 bg-white dark:bg-[#131c31] border border-slate-200 dark:border-slate-700 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                Remove Rider
+              </h3>
+              <button onClick={() => setDeleteRider(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/50 space-y-2 text-xs">
+              <p className="text-slate-700 dark:text-slate-300">
+                Are you sure you want to remove <strong className="text-slate-900 dark:text-white">{deleteRider.fullName}</strong> ({deleteRider.riderId}) from the fleet?
+              </p>
+              {deleteRider.cashInHand > 0 && (
+                <p className="text-rose-600 dark:text-rose-400 font-semibold">
+                  ⚠ This rider still has {deleteRider.cashInHand.toLocaleString()} PKR cash in hand. Ensure reconciliation before removal.
+                </p>
+              )}
+              <p className="text-slate-500 dark:text-slate-400">
+                The rider will be deactivated and removed from the active roster. This action can be reversed by an admin.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setDeleteRider(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await fetch(`/api/riders/${deleteRider.id}`, { method: 'DELETE' });
+                  } catch (err) {
+                    console.warn('API delete failed, removing locally:', err);
+                  }
+                  setRiders(riders.filter(r => r.id !== deleteRider.id));
+                  setDeleteRider(null);
+                }}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs cursor-pointer transition-colors flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Confirm Removal
+              </button>
+            </div>
           </div>
         </div>
       )}

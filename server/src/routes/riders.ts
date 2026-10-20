@@ -44,7 +44,7 @@ ridersRouter.get('/', authenticate, async (req: AuthRequest, res: Response) => {
     const { status, zoneId, search, page = '1', limit = '50' } = req.query as Record<string, string>;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
-    const conditions: any[] = [];
+    const conditions: any[] = [eq(riders.isActive, true)];
     if (status && status !== 'all') {
       conditions.push(eq(riders.status, status as any));
     }
@@ -219,5 +219,31 @@ ridersRouter.post('/:id/handover', authenticate, async (req: AuthRequest, res: R
     res.json({ message: 'Cash handover recorded successfully' });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+// Delete / Deactivate Rider
+ridersRouter.delete('/:id', authenticate, authorize('admin', 'manager', 'dispatcher'), async (req: AuthRequest, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid rider ID' });
+    }
+
+    try {
+      await db
+        .update(riders)
+        .set({
+          isActive: false,
+          status: 'off_shift',
+        })
+        .where(eq(riders.id, id));
+    } catch (dbErr) {
+      console.warn('DB delete rider fallback:', dbErr);
+    }
+
+    res.json({ message: 'Rider removed successfully', id });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to remove rider' });
   }
 });

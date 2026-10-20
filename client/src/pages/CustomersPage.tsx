@@ -21,10 +21,12 @@ import {
   Trash2,
   AlertTriangle,
   Eye,
+  Sparkles,
 } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
 import { KpiCard } from '@/components/common/KpiCard';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface CustomerItem {
   id: number;
@@ -42,88 +44,104 @@ interface CustomerItem {
   address: string;
 }
 
+const DEFAULT_CUSTOMERS: CustomerItem[] = [
+  {
+    id: 1,
+    customerCode: 'CUST-0491',
+    fullName: 'Shaikh Petroleum Corporation',
+    phone: '+92-21-35689100',
+    email: 'admin@shaikhpetro.com.pk',
+    type: 'corporate',
+    zoneName: 'Clifton & Sea View (Z-01)',
+    jarQuota: 20,
+    jarsInCirculation: 18,
+    depositHeld: 20000,
+    refillCycle: 'Twice Weekly (Mon & Thu)',
+    status: 'active',
+    address: 'Suite 602, Executive Tower, Marine Drive, Clifton Block 4',
+  },
+  {
+    id: 2,
+    customerCode: 'CUST-0512',
+    fullName: 'Begum Yasmeen Abbasi',
+    phone: '+92-300-2415987',
+    email: 'yasmeen.abbasi@gmail.com',
+    type: 'residential',
+    zoneName: 'DHA Phase 5 & 6 (Z-02)',
+    jarQuota: 4,
+    jarsInCirculation: 3,
+    depositHeld: 4000,
+    refillCycle: 'Weekly (Every Wed)',
+    status: 'active',
+    address: 'House 44/2, 17th Street, Khayaban-e-Mujahid, DHA Phase 5',
+  },
+  {
+    id: 3,
+    customerCode: 'CUST-0628',
+    fullName: 'Engro Polymers HQ',
+    phone: '+92-21-111-411-411',
+    email: 'procurement@engropolymers.com',
+    type: 'corporate',
+    zoneName: 'Korangi Industrial Area (Z-06)',
+    jarQuota: 50,
+    jarsInCirculation: 45,
+    depositHeld: 50000,
+    refillCycle: 'Twice Weekly (Tue & Fri)',
+    status: 'active',
+    address: 'Plot 12, Sector 15, Korangi Industrial Area',
+  },
+  {
+    id: 4,
+    customerCode: 'CUST-0740',
+    fullName: 'Dr. Tariq Farooq Clinic',
+    phone: '+92-333-2147896',
+    email: 'drtariq@farooqclinic.pk',
+    type: 'residential',
+    zoneName: 'Gulshan-e-Iqbal Block 1-7 (Z-03)',
+    jarQuota: 6,
+    jarsInCirculation: 5,
+    depositHeld: 6000,
+    refillCycle: 'Weekly (Every Mon)',
+    status: 'active',
+    address: 'B-12, Block 4, Gulshan-e-Iqbal',
+  },
+  {
+    id: 5,
+    customerCode: 'CUST-0814',
+    fullName: 'Muhammad Mansoor Residence',
+    phone: '+92-345-8899221',
+    email: 'mmansoor@yahoo.com',
+    type: 'residential',
+    zoneName: 'PECHS & Tariq Road (Z-04)',
+    jarQuota: 2,
+    jarsInCirculation: 2,
+    depositHeld: 2000,
+    refillCycle: 'Weekly (Every Sat)',
+    status: 'active',
+    address: 'House 19-A, Block 2, PECHS',
+  },
+];
+
 export const CustomersPage: React.FC = () => {
   const { formatMoney } = useCurrency();
+  const { user } = useAuth();
+  const isCleanTenant = !!(user?.tenantId && user.tenantId !== 'plant_default');
+  const tenantStorageKey = isCleanTenant ? `panniwalay_customers_${user?.tenantId}` : 'panniwalay_new_customers';
+
   const [typeFilter, setTypeFilter] = useState('all');
   const [search, setSearch] = useState('');
 
-  const [customers, setCustomers] = useState<CustomerItem[]>([
-    {
-      id: 1,
-      customerCode: 'CUST-0491',
-      fullName: 'Shaikh Petroleum Corporation',
-      phone: '+92-21-35689100',
-      email: 'admin@shaikhpetro.com.pk',
-      type: 'corporate',
-      zoneName: 'Clifton & Sea View (Z-01)',
-      jarQuota: 20,
-      jarsInCirculation: 18,
-      depositHeld: 20000,
-      refillCycle: 'Twice Weekly (Mon & Thu)',
-      status: 'active',
-      address: 'Suite 602, Executive Tower, Marine Drive, Clifton Block 4',
-    },
-    {
-      id: 2,
-      customerCode: 'CUST-0512',
-      fullName: 'Begum Yasmeen Abbasi',
-      phone: '+92-300-2415987',
-      email: 'yasmeen.abbasi@gmail.com',
-      type: 'residential',
-      zoneName: 'DHA Phase 5 & 6 (Z-02)',
-      jarQuota: 4,
-      jarsInCirculation: 3,
-      depositHeld: 4000,
-      refillCycle: 'Weekly (Every Wed)',
-      status: 'active',
-      address: 'House 44/2, 17th Street, Khayaban-e-Mujahid, DHA Phase 5',
-    },
-    {
-      id: 3,
-      customerCode: 'CUST-0628',
-      fullName: 'Engro Polymers HQ',
-      phone: '+92-21-111-411-411',
-      email: 'procurement@engropolymers.com',
-      type: 'corporate',
-      zoneName: 'Korangi Industrial Area (Z-06)',
-      jarQuota: 50,
-      jarsInCirculation: 45,
-      depositHeld: 50000,
-      refillCycle: 'Twice Weekly (Tue & Fri)',
-      status: 'active',
-      address: 'Plot 12, Sector 15, Korangi Industrial Area',
-    },
-    {
-      id: 4,
-      customerCode: 'CUST-0740',
-      fullName: 'Dr. Tariq Farooq Clinic',
-      phone: '+92-333-2147896',
-      email: 'drtariq@farooqclinic.pk',
-      type: 'residential',
-      zoneName: 'Gulshan-e-Iqbal Block 1-7 (Z-03)',
-      jarQuota: 6,
-      jarsInCirculation: 5,
-      depositHeld: 6000,
-      refillCycle: 'Weekly (Every Mon)',
-      status: 'active',
-      address: 'B-12, Block 4, Gulshan-e-Iqbal',
-    },
-    {
-      id: 5,
-      customerCode: 'CUST-0814',
-      fullName: 'Muhammad Mansoor Residence',
-      phone: '+92-345-8899221',
-      email: 'mmansoor@yahoo.com',
-      type: 'residential',
-      zoneName: 'PECHS & Tariq Road (Z-04)',
-      jarQuota: 2,
-      jarsInCirculation: 2,
-      depositHeld: 2000,
-      refillCycle: 'Weekly (Every Sat)',
-      status: 'active',
-      address: 'House 19-A, Block 2, PECHS',
-    },
-  ]);
+  const [customers, setCustomers] = useState<CustomerItem[]>(() => {
+    if (isCleanTenant) {
+      try {
+        const saved = localStorage.getItem(tenantStorageKey);
+        return saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    return DEFAULT_CUSTOMERS;
+  });
 
   // Invite Link Generator Modal State
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -168,6 +186,20 @@ export const CustomersPage: React.FC = () => {
 
   // Fetch live customers from API and merge any newly registered accounts
   const loadCustomers = async () => {
+    if (isCleanTenant) {
+      try {
+        const saved = localStorage.getItem(tenantStorageKey);
+        if (saved) {
+          setCustomers(JSON.parse(saved));
+        } else {
+          setCustomers([]);
+        }
+      } catch (e) {
+        setCustomers([]);
+      }
+      return;
+    }
+
     try {
       const res = await fetch('/api/customers');
       if (res.ok) {
@@ -304,9 +336,9 @@ export const CustomersPage: React.FC = () => {
 
     // Save to local storage cache as well
     try {
-      const existing = JSON.parse(localStorage.getItem('panniwalay_new_customers') || '[]');
+      const existing = JSON.parse(localStorage.getItem(tenantStorageKey) || '[]');
       existing.unshift(created);
-      localStorage.setItem('panniwalay_new_customers', JSON.stringify(existing));
+      localStorage.setItem(tenantStorageKey, JSON.stringify(existing));
     } catch (e) {}
 
     setCustomers([created, ...customers]);
@@ -330,9 +362,9 @@ export const CustomersPage: React.FC = () => {
 
     // Remove from localStorage
     try {
-      const localNew = JSON.parse(localStorage.getItem('panniwalay_new_customers') || '[]');
+      const localNew = JSON.parse(localStorage.getItem(tenantStorageKey) || '[]');
       const updated = localNew.filter((c: any) => c.id !== targetId && c.customerCode !== targetCode);
-      localStorage.setItem('panniwalay_new_customers', JSON.stringify(updated));
+      localStorage.setItem(tenantStorageKey, JSON.stringify(updated));
     } catch (e) {}
 
     // Remove from React state
@@ -507,7 +539,43 @@ export const CustomersPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
-              {filtered.map((c) => (
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-500 dark:text-slate-400">
+                    <div className="max-w-md mx-auto space-y-3 p-6 rounded-2xl bg-slate-50/50 dark:bg-slate-800/20 border border-dashed border-slate-200 dark:border-slate-800">
+                      <div className="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-500 flex items-center justify-center mx-auto shadow-xs">
+                        <Users className="w-6 h-6" />
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="font-bold text-slate-900 dark:text-white text-sm">
+                          Clean Workspace Active
+                        </h4>
+                        <p className="text-xs text-slate-400 leading-relaxed">
+                          This is a fresh, isolated workspace for <span className="font-semibold text-slate-700 dark:text-slate-300">{user?.plantName || 'your water plant'}</span>. No customers or subscribers have been registered yet.
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 pt-2">
+                        <button
+                          onClick={() => setShowAddModal(true)}
+                          className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
+                        >
+                          + Add First Customer
+                        </button>
+                        <button
+                          onClick={() => {
+                            setGeneratedLink(null);
+                            setShowInviteModal(true);
+                          }}
+                          className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-all cursor-pointer"
+                        >
+                          Generate Invite Link
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((c) => (
                 <tr
                   key={c.id}
                   className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors"
@@ -572,7 +640,7 @@ export const CustomersPage: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

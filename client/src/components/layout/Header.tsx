@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { useCurrency, CurrencyCode } from '@/context/CurrencyContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface HeaderProps {
   onMenuToggle?: () => void;
@@ -20,6 +21,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onMenuToggle, title }) => {
   const { isDark, setTheme, theme } = useTheme();
   const { currency, setCurrency } = useCurrency();
+  const { user } = useAuth();
 
   return (
     <header className="h-16 px-4 md:px-6 bg-white/80 dark:bg-[#111927]/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between sticky top-0 z-20">
@@ -39,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, title }) => {
 
         <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-300">
           <Building2 className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-          <span>Plant #4 • Karachi</span>
+          <span>{user?.plantName || 'Plant #4 • Karachi'}</span>
         </div>
 
         <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">

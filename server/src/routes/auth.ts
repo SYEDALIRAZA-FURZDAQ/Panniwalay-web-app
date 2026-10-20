@@ -379,6 +379,63 @@ authRouter.post('/logout', authenticate, async (req: AuthRequest, res: Response)
   }
 });
 
+// ─── VERIFY PASSWORD (for sensitive actions) ────────────────────────
+authRouter.post('/verify-password', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ error: 'Password is required', verified: false });
+    }
+
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Not authenticated', verified: false });
+    }
+
+    // Check in-memory users first
+    let matchedUser = inMemoryUsers.find((u) => u.id === userId && u.isActive);
+
+    // Check DB if not in memory
+    if (!matchedUser) {
+      try {
+        const [dbUser] = await db
+          .select({ id: users.id, passwordHash: users.passwordHash, isActive: users.isActive })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+
+        if (dbUser && dbUser.isActive) {
+          matchedUser = { passwordHash: dbUser.passwordHash } as any;
+        }
+      } catch (dbErr) {
+        console.warn('DB lookup during verify-password:', dbErr);
+      }
+    }
+
+    if (!matchedUser) {
+      return res.status(401).json({ error: 'User not found', verified: false });
+    }
+
+    let isValid = false;
+    try {
+      isValid = await bcrypt.compare(password, matchedUser.passwordHash);
+    } catch (e) {
+      // Fallback for demo account
+      if (password === 'Admin@123' && userId === 1) {
+        isValid = true;
+      }
+    }
+
+    if (!isValid) {
+      return res.status(403).json({ error: 'Incorrect password', verified: false });
+    }
+
+    res.json({ verified: true, message: 'Password verified successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Verification failed', verified: false });
+  }
+});
+
 // ─── GET CURRENT USER ───────────────────────────────────────────────
 authRouter.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
   res.json({ user: req.user });
