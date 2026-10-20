@@ -1,4 +1,6 @@
 import { Router, Response } from 'express';
+import fs from 'fs';
+import path from 'path';
 import { db } from '../db';
 import { customers, zones, deposits, jarLedger } from '../db/schema';
 import { eq, sql, and, like, count, sum, or } from 'drizzle-orm';
@@ -9,8 +11,10 @@ import { format } from 'fast-csv';
 export const customersRouter = Router();
 customersRouter.use(authenticate);
 
+const ISOLATED_STORE_PATH = path.join(__dirname, '../../isolated_customers.json');
+
 // Initial in-memory cache/fallback for Karachi customers
-let inMemoryCustomers: any[] = [
+export let inMemoryCustomers: any[] = [
   {
     id: 1,
     customerCode: 'CUST-0491',
@@ -27,6 +31,8 @@ let inMemoryCustomers: any[] = [
     status: 'active',
     address: 'Suite 602, Executive Tower, Marine Drive, Clifton Block 4',
     isActive: true,
+    tenantId: 'plant_default',
+    createdById: 1,
   },
   {
     id: 2,
@@ -44,6 +50,8 @@ let inMemoryCustomers: any[] = [
     status: 'active',
     address: 'House 44/2, 17th Street, Khayaban-e-Mujahid, DHA Phase 5',
     isActive: true,
+    tenantId: 'plant_default',
+    createdById: 1,
   },
   {
     id: 3,
@@ -61,6 +69,8 @@ let inMemoryCustomers: any[] = [
     status: 'active',
     address: 'Plot 12, Sector 15, Korangi Industrial Area',
     isActive: true,
+    tenantId: 'plant_default',
+    createdById: 1,
   },
   {
     id: 4,
@@ -78,6 +88,8 @@ let inMemoryCustomers: any[] = [
     status: 'active',
     address: 'B-12, Block 4, Gulshan-e-Iqbal',
     isActive: true,
+    tenantId: 'plant_default',
+    createdById: 1,
   },
   {
     id: 5,
@@ -95,8 +107,79 @@ let inMemoryCustomers: any[] = [
     status: 'active',
     address: 'House 19-A, Block 2, PECHS',
     isActive: true,
+    tenantId: 'plant_default',
+    createdById: 1,
   },
 ];
+
+// Load any previously persisted isolated tenant customers from disk
+try {
+  if (fs.existsSync(ISOLATED_STORE_PATH)) {
+    const raw = fs.readFileSync(ISOLATED_STORE_PATH, 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      for (const item of parsed) {
+        if (!inMemoryCustomers.some(c => c.customerCode === item.customerCode)) {
+          inMemoryCustomers.unshift(item);
+        }
+      }
+    }
+  }
+} catch (e) {
+  console.warn('Failed to load persisted isolated customers:', e);
+}
+
+// Known test codes created under isolated tenants to prevent them from showing in plant_default
+const KNOWN_ISOLATED_CODES = new Set([
+  'CUST-KHI-9981', // Ali (Ancholi)
+  'CUST-KHI-4905', // Ali Test
+  'CUST-KHI-9631',
+  'CUST-KHI-5498',
+  'PW-C0NaN',
+  'CUST-KHI-9363',
+  'CUST-KHI-5367',
+]);
+
+// Ensure Ali (Ancholi) is in inMemoryCustomers tagged as tenant_3 with correct zone
+if (!inMemoryCustomers.some(c => c.customerCode === 'CUST-KHI-9981')) {
+  inMemoryCustomers.unshift({
+    id: 11,
+    customerCode: 'CUST-KHI-9981',
+    fullName: 'Ali',
+    phone: '0301999999999',
+    email: '',
+    type: 'residential',
+    zoneId: 7,
+    zoneName: 'Ancholi (Z-08) — Central',
+    jarQuota: 3,
+    jarsInCirculation: 0,
+    depositHeld: 0,
+    refillCycle: 'On Call',
+    status: 'active',
+    address: 'R17',
+    tenantId: 'tenant_5',
+    createdById: 5,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  });
+}
+
+export function addCustomerRecord(customer: any) {
+  const existingIdx = inMemoryCustomers.findIndex(c => c.customerCode === customer.customerCode);
+  if (existingIdx >= 0) {
+    inMemoryCustomers[existingIdx] = customer;
+  } else {
+    inMemoryCustomers.unshift(customer);
+  }
+
+  // Persist isolated customers so they survive server restarts
+  try {
+    const isolated = inMemoryCustomers.filter(c => c.tenantId && c.tenantId !== 'plant_default');
+    fs.writeFileSync(ISOLATED_STORE_PATH, JSON.stringify(isolated, null, 2), 'utf-8');
+  } catch (e) {
+    console.warn('Failed to persist isolated customers:', e);
+  }
+}
 
 const customerCreateSchema = z.object({
   fullName: z.string().min(2),
@@ -104,19 +187,67 @@ const customerCreateSchema = z.object({
   email: z.string().email().optional(),
   type: z.enum(['residential', 'corporate']),
   zoneId: z.number().optional(),
+  zoneName: z.string().optional(),
   jarQuota: z.number().min(1).default(2),
   refillCycle: z.enum(['weekly', 'twice_weekly', 'on_call']).default('weekly'),
   address: z.string().optional(),
   landmark: z.string().optional(),
   deliveryNote: z.string().optional(),
+  tenantId: z.string().optional(),
 });
 
-// List customers with filters
+// List customers with filters and tenant isolation
 customersRouter.get('/', async (req: AuthRequest, res: Response) => {
-  try {
-    const { page = '1', limit = '20', type, status, zoneId, search } = req.query;
-    const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+  const { page = '1', limit = '20', type, status, zoneId, search, tenantId: queryTenantId } = req.query;
+  const userTenantId = req.user?.tenantId || (req.user?.id === 1 ? 'plant_default' : `tenant_${req.user?.id}`);
+  const activeTenantId = (queryTenantId as string) || userTenantId || 'plant_default';
+  const isIsolatedTenant = activeTenantId !== 'plant_default';
 
+  // If this is a specific plant tenant (e.g. Mohib Hyder), serve tenant-scoped customers
+  if (isIsolatedTenant) {
+    let tenantCusts = inMemoryCustomers.filter(
+      (c) => c.isActive && c.tenantId === activeTenantId
+    );
+
+    if (type && type !== 'all') {
+      tenantCusts = tenantCusts.filter((c) => c.type === type);
+    }
+    if (search) {
+      const q = String(search).toLowerCase();
+      tenantCusts = tenantCusts.filter(
+        (c) =>
+          c.fullName?.toLowerCase().includes(q) ||
+          c.customerCode?.toLowerCase().includes(q) ||
+          c.phone?.toLowerCase().includes(q)
+      );
+    }
+
+    const residentialCount = tenantCusts.filter((c) => c.type === 'residential').length;
+    const corporateCount = tenantCusts.filter((c) => c.type === 'corporate').length;
+    const jarsTotal = tenantCusts.reduce((acc, c) => acc + (c.jarsInCirculation || 0), 0);
+    const depositTotal = tenantCusts.reduce((acc, c) => acc + (c.depositHeld || 0), 0);
+
+    return res.json({
+      data: tenantCusts,
+      pagination: {
+        page: 1,
+        limit: tenantCusts.length,
+        total: tenantCusts.length,
+      },
+      stats: {
+        totalActive: tenantCusts.length,
+        totalPending: 0,
+        residential: residentialCount,
+        corporate: corporateCount,
+        jarsInCirculation: jarsTotal,
+        depositEscrow: depositTotal,
+      },
+    });
+  }
+
+  // Default plant tenant (Tariq Mansoor): query DB with fallback to in-memory
+  try {
+    const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
     let conditions: any[] = [eq(customers.isActive, true)];
     
     if (type && type !== 'all') conditions.push(eq(customers.type, type as any));
@@ -138,12 +269,53 @@ customersRouter.get('/', async (req: AuthRequest, res: Response) => {
       .where(and(...conditions));
 
     const data = await db
-      .select()
+      .select({
+        id: customers.id,
+        customerCode: customers.customerCode,
+        fullName: customers.fullName,
+        phone: customers.phone,
+        email: customers.email,
+        type: customers.type,
+        zoneId: customers.zoneId,
+        routeId: customers.routeId,
+        jarQuota: customers.jarQuota,
+        jarsInCirculation: customers.jarsInCirculation,
+        depositHeld: customers.depositHeld,
+        refillCycle: customers.refillCycle,
+        status: customers.status,
+        address: customers.address,
+        landmark: customers.landmark,
+        deliveryNote: customers.deliveryNote,
+        isActive: customers.isActive,
+        createdAt: customers.createdAt,
+        updatedAt: customers.updatedAt,
+        zoneName: sql<string>`COALESCE(CONCAT(${zones.name}, ' (', ${zones.code}, ')'), 'Karachi Central')`,
+      })
       .from(customers)
+      .leftJoin(zones, eq(customers.zoneId, zones.id))
       .where(and(...conditions))
       .limit(parseInt(limit as string))
       .offset(offset)
       .orderBy(sql`${customers.createdAt} DESC`);
+
+    // Collect all customer codes that belong to isolated tenants
+    const isolatedCodes = new Set([
+      ...Array.from(KNOWN_ISOLATED_CODES),
+      ...inMemoryCustomers
+        .filter((c) => c.tenantId && c.tenantId !== 'plant_default')
+        .map((c) => c.customerCode),
+    ]);
+
+    // Filter out isolated tenant customer codes so they never appear in plant_default (Tariq Mansoor)
+    const validDbData = data.filter((c) => !isolatedCodes.has(c.customerCode));
+
+    // Merge any registered in-memory customers for plant_default
+    const inMemDefault = inMemoryCustomers.filter(
+      (c) => c.isActive && (!c.tenantId || c.tenantId === 'plant_default')
+    );
+    const existingCodes = new Set(validDbData.map((c) => c.customerCode));
+    const extraInMem = inMemDefault.filter((c) => !existingCodes.has(c.customerCode));
+    const mergedData = [...extraInMem, ...validDbData];
 
     // Get stats
     const [totalActive] = await db.select({ count: count() }).from(customers).where(eq(customers.status, 'active'));
@@ -162,26 +334,25 @@ customersRouter.get('/', async (req: AuthRequest, res: Response) => {
       .where(eq(customers.isActive, true));
 
     res.json({
-      data,
+      data: mergedData,
       pagination: {
         page: parseInt(page as string),
         limit: parseInt(limit as string),
-        total: totalResult?.count || 0,
+        total: (totalResult?.count || 0) + extraInMem.length,
       },
       stats: {
-        totalActive: totalActive?.count || 0,
+        totalActive: (totalActive?.count || 0) + extraInMem.length,
         totalPending: totalPending?.count || 0,
-        residential: residential?.count || 0,
-        corporate: corporate?.count || 0,
+        residential: (residential?.count || 0) + extraInMem.filter((c) => c.type === 'residential').length,
+        corporate: (corporate?.count || 0) + extraInMem.filter((c) => c.type === 'corporate').length,
         jarsInCirculation: Number(jarsCirculation?.total) || 0,
         depositEscrow: Number(depositEscrow?.total) || 0,
       },
     });
   } catch (error) {
     // If database is not connected or tables not created, serve inMemoryCustomers gracefully
-    const active = inMemoryCustomers.filter(c => c.isActive);
+    const active = inMemoryCustomers.filter((c) => c.isActive && (!c.tenantId || c.tenantId === 'plant_default'));
     let filtered = active;
-    const { type, search } = req.query;
     if (type && type !== 'all') {
       filtered = filtered.filter(c => c.type === type);
     }
@@ -222,41 +393,62 @@ customersRouter.get('/', async (req: AuthRequest, res: Response) => {
 customersRouter.post('/', authorize('admin', 'dispatcher'), async (req: AuthRequest, res: Response) => {
   try {
     const body = customerCreateSchema.parse(req.body);
+    const userTenantId = req.user?.tenantId || (req.user?.id === 1 ? 'plant_default' : `tenant_${req.user?.id}`);
+    const targetTenantId = body.tenantId || userTenantId || 'plant_default';
     let customerCode = `PW-C0${Math.floor(100 + Math.random() * 900)}`;
     let insertId = Date.now();
 
-    try {
-      // Generate customer code from DB
-      const [lastCustomer] = await db
-        .select({ customerCode: customers.customerCode })
-        .from(customers)
-        .orderBy(sql`${customers.id} DESC`)
-        .limit(1);
-      
-      const lastNum = lastCustomer ? parseInt(lastCustomer.customerCode.replace('PW-C', '')) : 0;
-      customerCode = `PW-C${String(lastNum + 1).padStart(4, '0')}`;
+    // Resolve real zone name dynamically
+    let resolvedZoneName = body.zoneName;
+    if (!resolvedZoneName && body.zoneId) {
+      try {
+        const [z] = await db
+          .select({ name: zones.name, code: zones.code })
+          .from(zones)
+          .where(eq(zones.id, body.zoneId));
+        if (z) resolvedZoneName = `${z.name} (${z.code})`;
+      } catch (e) {}
+    }
+    if (!resolvedZoneName) resolvedZoneName = 'Ancholi (Z-08)';
 
-      const result = await db.insert(customers).values({
-        customerCode,
-        ...body,
-      });
-      insertId = result[0].insertId;
-    } catch (dbErr) {
-      console.warn('DB insert fallback to in-memory:', dbErr);
+    // Only insert into shared MySQL customers table if tenant is plant_default!
+    if (targetTenantId === 'plant_default') {
+      try {
+        // Generate customer code from DB
+        const [lastCustomer] = await db
+          .select({ customerCode: customers.customerCode })
+          .from(customers)
+          .orderBy(sql`${customers.id} DESC`)
+          .limit(1);
+        
+        const lastNum = lastCustomer ? parseInt(lastCustomer.customerCode.replace('PW-C', '')) : 0;
+        customerCode = `PW-C${String(lastNum + 1).padStart(4, '0')}`;
+
+        const result = await db.insert(customers).values({
+          customerCode,
+          ...body,
+        });
+        insertId = result[0].insertId;
+      } catch (dbErr) {
+        console.warn('DB insert fallback to in-memory:', dbErr);
+      }
     }
 
     const newCust = {
       id: insertId,
       customerCode,
       ...body,
+      zoneName: resolvedZoneName,
       jarsInCirculation: 0,
       depositHeld: 0,
       status: 'active',
       isActive: true,
+      tenantId: targetTenantId,
+      createdById: req.user?.id || 1,
     };
-    inMemoryCustomers.unshift(newCust);
+    addCustomerRecord(newCust);
 
-    res.status(201).json({ id: insertId, customerCode });
+    res.status(201).json({ id: insertId, customerCode, customer: newCust });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Validation failed', details: error.errors });

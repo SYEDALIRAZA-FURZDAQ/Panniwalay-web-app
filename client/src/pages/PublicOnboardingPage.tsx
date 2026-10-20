@@ -61,6 +61,16 @@ export const PublicOnboardingPage: React.FC = () => {
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           setAvailableZones(data);
+          // If current zoneId does not exist in active zones, select the first active zone
+          setZoneId((prevId) => {
+            const current = data.find((z) => z.id === prevId);
+            if (current) {
+              setZoneName(`${current.name} (${current.code})`);
+              return prevId;
+            }
+            setZoneName(`${data[0].name} (${data[0].code})`);
+            return data[0].id;
+          });
         }
       })
       .catch(() => {});
@@ -93,26 +103,32 @@ export const PublicOnboardingPage: React.FC = () => {
       });
   }, []);
 
-  // Pre-fetch invite defaults if available (also carries pricing)
+  // Pre-fetch invite defaults if available (also carries pricing and tenant information)
+  const tenantFromUrl = searchParams.get('tenant');
+  const [resolvedTenantId, setResolvedTenantId] = useState<string | null>(tenantFromUrl);
+
   useEffect(() => {
-    if (token) {
-      fetch(`/api/onboarding/verify?token=${token}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.valid) {
-            if (data.preassignedZoneId) setZoneId(data.preassignedZoneId);
-            if (data.zoneName) setZoneName(data.zoneName);
-            if (data.preassignedCategory) setAccountType(data.preassignedCategory);
-            if (data.preassignedJarQuota) setJarQuota(data.preassignedJarQuota);
-            // Update pricing from verify response (server-authoritative)
-            if (data.standardDepositPerJar != null) setStandardDepositPerJar(Number(data.standardDepositPerJar));
-            if (data.refillPricePerJar != null) setRefillPricePerJar(Number(data.refillPricePerJar));
-            setPricingLoaded(true);
-          }
-        })
-        .catch(() => {});
-    }
-  }, [token]);
+    const query = new URLSearchParams();
+    if (token) query.set('token', token);
+    if (tenantFromUrl) query.set('tenant', tenantFromUrl);
+
+    fetch(`/api/onboarding/verify?${query.toString()}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.valid) {
+          if (data.tenantId) setResolvedTenantId(data.tenantId);
+          if (data.preassignedZoneId) setZoneId(data.preassignedZoneId);
+          if (data.zoneName) setZoneName(data.zoneName);
+          if (data.preassignedCategory) setAccountType(data.preassignedCategory);
+          if (data.preassignedJarQuota) setJarQuota(data.preassignedJarQuota);
+          // Update pricing from verify response (server-authoritative)
+          if (data.standardDepositPerJar != null) setStandardDepositPerJar(Number(data.standardDepositPerJar));
+          if (data.refillPricePerJar != null) setRefillPricePerJar(Number(data.refillPricePerJar));
+          setPricingLoaded(true);
+        }
+      })
+      .catch(() => {});
+  }, [token, tenantFromUrl]);
 
   // Pricing calculations (dynamic — driven by settings)
   const totalDepositEscrow = jarQuota * standardDepositPerJar;
@@ -124,6 +140,11 @@ export const PublicOnboardingPage: React.FC = () => {
     setSubmitting(true);
 
     let customerCode = `CUST-KHI-${Math.floor(1000 + Math.random() * 9000)}`;
+    const effectiveTenant = resolvedTenantId || tenantFromUrl || 'plant_default';
+    let returnedCustId = Date.now();
+
+    const matchedZone = availableZones.find((z) => z.id === Number(zoneId));
+    const effectiveZoneName = matchedZone ? `${matchedZone.name} (${matchedZone.code})` : zoneName;
 
     try {
       const res = await fetch('/api/onboarding/register', {
@@ -131,11 +152,13 @@ export const PublicOnboardingPage: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           token: token || undefined,
+          tenantId: effectiveTenant,
           fullName,
           phone,
           email: email || undefined,
           type: accountType,
           zoneId: Number(zoneId),
+          zoneName: effectiveZoneName,
           jarQuota,
           address,
           landmark: landmark || undefined,
@@ -149,32 +172,51 @@ export const PublicOnboardingPage: React.FC = () => {
         if (data.customerCode) {
           customerCode = data.customerCode;
         }
+        if (data.customerId) {
+          returnedCustId = data.customerId;
+        }
+        if (data.tenantId) {
+          setResolvedTenantId(data.tenantId);
+        }
       }
     } catch (e) {
       console.warn('API registration call fallback:', e);
     }
 
-    // Persist to local customer cache so it shows immediately on Customers Page
+    // Persist to admin/tenant-specific customer store so it shows immediately on the specific admin's Customers Page
+    const targetTenantKey = effectiveTenant !== 'plant_default' ? `panniwalay_customers_${effectiveTenant}` : 'panniwalay_new_customers';
+    const newEntry = {
+      id: returnedCustId,
+      customerCode,
+      fullName,
+      phone,
+      email,
+      type: accountType,
+      zoneName: effectiveZoneName,
+      jarQuota,
+      jarsInCirculation: 0,
+      depositHeld: totalDepositEscrow,
+      refillCycle: refillCycle === 'weekly' ? 'Weekly' : refillCycle === 'twice_weekly' ? 'Twice Weekly' : 'On Call',
+      status: 'active',
+      address,
+      tenantId: effectiveTenant,
+    };
+
     try {
-      const existing = JSON.parse(localStorage.getItem('panniwalay_new_customers') || '[]');
-      const newEntry = {
-        id: Date.now(),
-        customerCode,
-        fullName,
-        phone,
-        email,
-        type: accountType,
-        zoneName,
-        jarQuota,
-        jarsInCirculation: 0,
-        depositHeld: totalDepositEscrow,
-        refillCycle: refillCycle === 'weekly' ? 'Weekly' : refillCycle === 'twice_weekly' ? 'Twice Weekly' : 'On Call',
-        status: 'active',
-        address,
-      };
+      const existing = JSON.parse(localStorage.getItem(targetTenantKey) || '[]');
       existing.unshift(newEntry);
-      localStorage.setItem('panniwalay_new_customers', JSON.stringify(existing));
-    } catch (storageErr) {}
+      localStorage.setItem(targetTenantKey, JSON.stringify(existing));
+
+      // Also notify any open customer pages via custom event and storage event
+      window.dispatchEvent(
+        new CustomEvent('customer_registered', {
+          detail: { tenantId: effectiveTenant, customer: newEntry },
+        })
+      );
+      window.dispatchEvent(new Event('storage'));
+    } catch (storageErr) {
+      console.warn('LocalStorage save error:', storageErr);
+    }
 
     setAssignedCode(customerCode);
     setStep(4);
@@ -382,9 +424,14 @@ export const PublicOnboardingPage: React.FC = () => {
                 <select
                   value={zoneId}
                   onChange={(e) => {
-                    setZoneId(Number(e.target.value));
-                    const selected = e.target.options[e.target.selectedIndex].text;
-                    setZoneName(selected);
+                    const id = Number(e.target.value);
+                    setZoneId(id);
+                    const found = availableZones.find((z) => z.id === id);
+                    if (found) {
+                      setZoneName(`${found.name} (${found.code})`);
+                    } else {
+                      setZoneName(e.target.options[e.target.selectedIndex].text);
+                    }
                   }}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-sky-500 text-sm"
                 >

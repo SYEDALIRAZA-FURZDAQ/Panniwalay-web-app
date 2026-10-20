@@ -6,6 +6,7 @@ export interface AuthRequest extends Request {
         fullName: string;
         roleId: number;
         roleName: string;
+        tenantId?: string;
     };
 }
 export declare const authenticate: (req: AuthRequest, res: Response, next: NextFunction) => Promise<void | Response<any, Record<string, any>>>;

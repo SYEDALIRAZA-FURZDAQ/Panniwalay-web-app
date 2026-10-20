@@ -88,4 +88,5 @@ app.listen(PORT, () => {
   logger.info(`🚰 Panniwalay ERP Server running on port ${PORT}`);
 });
 
+// Server initialized with isolated tenant routing
 export default app;

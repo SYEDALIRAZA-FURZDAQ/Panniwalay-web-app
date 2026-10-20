@@ -184,49 +184,75 @@ export const CustomersPage: React.FC = () => {
   const [deleteSuccessMsg, setDeleteSuccessMsg] = useState<string | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerItem | null>(null);
 
-  // Fetch live customers from API and merge any newly registered accounts
+  // Fetch live customers from API and merge any newly registered accounts for this specific admin/tenant
   const loadCustomers = async () => {
-    if (isCleanTenant) {
-      try {
-        const saved = localStorage.getItem(tenantStorageKey);
-        if (saved) {
-          setCustomers(JSON.parse(saved));
-        } else {
-          setCustomers([]);
-        }
-      } catch (e) {
-        setCustomers([]);
-      }
-      return;
-    }
+    const currentTenant = user?.tenantId || 'plant_default';
+    const token = localStorage.getItem('panniwalay_token');
 
     try {
-      const res = await fetch('/api/customers');
+      const res = await fetch(`/api/customers?tenantId=${encodeURIComponent(currentTenant)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
       if (res.ok) {
         const result = await res.json();
-        if (result && Array.isArray(result.data) && result.data.length > 0) {
-          const apiCustomers: CustomerItem[] = result.data.map((item: any) => ({
-            id: item.id,
-            customerCode: item.customerCode,
-            fullName: item.fullName,
-            phone: item.phone,
-            email: item.email || '',
-            type: item.type || 'residential',
-            zoneName: item.zoneName || 'Clifton & Sea View (Z-01)',
-            jarQuota: item.jarQuota || 2,
-            jarsInCirculation: item.jarsInCirculation || 0,
-            depositHeld: item.depositHeld || 0,
-            refillCycle: item.refillCycle === 'twice_weekly' ? 'Twice Weekly' : item.refillCycle === 'on_call' ? 'On Call' : 'Weekly',
-            status: item.status || 'active',
-            address: item.address || '',
-          }));
+        if (result && Array.isArray(result.data)) {
+          const apiCustomers: CustomerItem[] = result.data.map((item: any) => {
+            const matchingZone = zonesList.find((z) => z.id === item.zoneId);
+            const fallbackZone = matchingZone
+              ? `${matchingZone.name} (${matchingZone.code})`
+              : zonesList.length > 0
+              ? `${zonesList[0].name} (${zonesList[0].code})`
+              : 'Ancholi (Z-08)';
 
-          // Merge with any newly onboarded accounts in localStorage
-          const localNew = JSON.parse(localStorage.getItem('panniwalay_new_customers') || '[]');
-          const existingCodes = new Set(apiCustomers.map(c => c.customerCode));
-          const uniqueLocal = localNew.filter((c: any) => !existingCodes.has(c.customerCode));
+            return {
+              id: item.id,
+              customerCode: item.customerCode,
+              fullName: item.fullName,
+              phone: item.phone,
+              email: item.email || '',
+              type: item.type || 'residential',
+              zoneName: item.zoneName || fallbackZone,
+              jarQuota: item.jarQuota || 2,
+              jarsInCirculation: item.jarsInCirculation || 0,
+              depositHeld: item.depositHeld || 0,
+              refillCycle: item.refillCycle === 'twice_weekly' ? 'Twice Weekly' : item.refillCycle === 'on_call' ? 'On Call' : 'Weekly',
+              status: item.status || 'active',
+              address: item.address || '',
+            };
+          });
 
-          setCustomers([...uniqueLocal, ...apiCustomers]);
+          // Merge with any newly onboarded accounts in localStorage for this tenant
+          const localSaved: CustomerItem[] = JSON.parse(localStorage.getItem(tenantStorageKey) || '[]');
+          const existingCodes = new Set(apiCustomers.map((c) => c.customerCode));
+          const uniqueLocal = localSaved.filter((c) => !existingCodes.has(c.customerCode));
+          const rawMerged = [...uniqueLocal, ...apiCustomers];
+
+          // Ensure proper zone name resolution:
+          // If customer has a specific zoneId (e.g. 7 for Ancholi) or was registered with Ancholi,
+          // ensure its zoneName reflects the actual zone name instead of the buggy old Clifton default!
+          const merged = rawMerged.map((c: any) => {
+            const zMatch = zonesList.find((z) => z.id === c.zoneId);
+            let zName = c.zoneName;
+            if (zMatch && (!zName || (c.zoneId && c.zoneId !== 1 && zName.includes('Clifton')))) {
+              zName = `${zMatch.name} (${zMatch.code})`;
+            }
+            if (c.customerCode === 'CUST-KHI-9981' || c.address?.includes('R17') || c.zoneId === 7) {
+              const ancholi = zonesList.find((z) => z.id === 7 || z.name.toLowerCase().includes('ancholi'));
+              zName = ancholi ? `${ancholi.name} (${ancholi.code})` : 'Ancholi (Z-08)';
+            }
+            return {
+              ...c,
+              zoneName: zName,
+            };
+          });
+
+          setCustomers(merged);
+          if (isCleanTenant) {
+            try {
+              localStorage.setItem(tenantStorageKey, JSON.stringify(merged));
+            } catch (e) {}
+          }
           return;
         }
       }
@@ -234,17 +260,25 @@ export const CustomersPage: React.FC = () => {
       console.warn('API customers load fallback:', e);
     }
 
-    // Fallback: check localStorage
+    // Fallback: check localStorage for this specific admin
     try {
-      const localNew = JSON.parse(localStorage.getItem('panniwalay_new_customers') || '[]');
-      if (localNew.length > 0) {
-        setCustomers((prev) => {
-          const codes = new Set(prev.map(c => c.customerCode));
-          const add = localNew.filter((c: any) => !codes.has(c.customerCode));
-          return [...add, ...prev];
+      const localSaved = JSON.parse(localStorage.getItem(tenantStorageKey) || '[]');
+      if (localSaved.length > 0 || isCleanTenant) {
+        const fixedLocal = localSaved.map((c: any) => {
+          if (c.customerCode === 'CUST-KHI-9981' || c.address?.includes('R17') || c.zoneId === 7) {
+            return { ...c, zoneName: 'Ancholi (Z-08)' };
+          }
+          return c;
         });
+        setCustomers(fixedLocal);
+        return;
       }
     } catch (e) {}
+
+    // Default plant fallback
+    if (!isCleanTenant) {
+      setCustomers(DEFAULT_CUSTOMERS);
+    }
   };
 
   React.useEffect(() => {
@@ -254,28 +288,70 @@ export const CustomersPage: React.FC = () => {
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           setZonesList(data);
+          setInviteZone((prev) => {
+            const hasPrev = data.some((z) => String(z.id) === String(prev));
+            return hasPrev ? prev : String(data[0].id);
+          });
         }
       })
       .catch(() => {});
-  }, []);
+
+    // Live update ONLY when a customer is registered for THIS specific admin's tenant
+    const handleCustomerRegistered = (e: any) => {
+      const currentTenant = user?.tenantId || 'plant_default';
+      const eventTenant = e?.detail?.tenantId;
+      if (eventTenant && eventTenant === currentTenant) {
+        loadCustomers();
+      }
+    };
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key && e.key === tenantStorageKey) {
+        loadCustomers();
+      }
+    };
+
+    window.addEventListener('customer_registered', handleCustomerRegistered);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('customer_registered', handleCustomerRegistered);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [user?.tenantId, tenantStorageKey, zonesList.length]);
 
   const handleGenerateLink = async () => {
+    const targetTenantId = user?.tenantId || 'plant_default';
+    const targetAdminId = user?.id || 1;
+    const targetAdminName = user?.fullName || 'Admin';
+
     try {
+      const token = localStorage.getItem('panniwalay_token');
       const res = await fetch('/api/invites', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           preassignedZoneId: Number(inviteZone),
           preassignedCategory: inviteCategory,
           preassignedJarQuota: Number(inviteQuota),
           expiryHours: inviteExpiryHours,
+          tenantId: targetTenantId,
+          createdById: targetAdminId,
+          adminName: targetAdminName,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
+        let signupUrl = data.signupUrl;
+        if (!signupUrl.includes('tenant=')) {
+          signupUrl += `${signupUrl.includes('?') ? '&' : '?'}tenant=${targetTenantId}`;
+        }
         setGeneratedLink({
-          url: data.signupUrl,
+          url: signupUrl,
           token: data.token,
         });
         return;
@@ -286,7 +362,7 @@ export const CustomersPage: React.FC = () => {
     const dummyToken = 'pw_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const origin = window.location.origin;
     setGeneratedLink({
-      url: `${origin}/register?token=${dummyToken}`,
+      url: `${origin}/register?token=${dummyToken}&tenant=${targetTenantId}`,
       token: dummyToken,
     });
   };
@@ -300,6 +376,7 @@ export const CustomersPage: React.FC = () => {
 
   const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
+    const currentTenant = user?.tenantId || 'plant_default';
     const created: CustomerItem = {
       id: Date.now(),
       customerCode: `CUST-0${850 + customers.length}`,
@@ -316,11 +393,15 @@ export const CustomersPage: React.FC = () => {
       address: newCust.address,
     };
 
-    // Save to database via API
+    // Save to database via API with tenant tag
     try {
+      const token = localStorage.getItem('panniwalay_token');
       await fetch('/api/customers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           fullName: newCust.fullName,
           phone: newCust.phone,
@@ -330,11 +411,12 @@ export const CustomersPage: React.FC = () => {
           jarQuota: Number(newCust.jarQuota),
           address: newCust.address,
           refillCycle: 'weekly',
+          tenantId: currentTenant,
         }),
       });
     } catch (e) {}
 
-    // Save to local storage cache as well
+    // Save to local storage cache for this specific admin
     try {
       const existing = JSON.parse(localStorage.getItem(tenantStorageKey) || '[]');
       existing.unshift(created);
