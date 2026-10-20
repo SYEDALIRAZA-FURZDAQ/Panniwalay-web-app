@@ -39,10 +39,10 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     >
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
             {title}
           </p>
-          <h3 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white tabular-nums">
+          <h3 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white tabular-nums">
             {value}
           </h3>
         </div>
@@ -63,7 +63,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           {trend && (
             <span
               className={cn(
-                'font-medium px-1.5 py-0.5 rounded',
+                'font-bold px-1.5 py-0.5 rounded',
                 trend.isPositive
                   ? 'text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/60'
                   : 'text-rose-700 bg-rose-50 dark:text-rose-400 dark:bg-rose-950/60'
@@ -73,7 +73,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
             </span>
           )}
           {subtitle && (
-            <span className="text-slate-500 dark:text-slate-400 truncate">
+            <span className="text-slate-600 dark:text-slate-400 font-medium truncate">
               {subtitle}
             </span>
           )}

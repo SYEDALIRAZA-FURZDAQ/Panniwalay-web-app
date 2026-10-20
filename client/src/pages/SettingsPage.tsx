@@ -410,9 +410,17 @@ export const SettingsPage: React.FC = () => {
           </div>
 
           <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
-              Primary Brand Color Accent
-            </span>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 block">
+                  Primary Brand Color Accent
+                </span>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Dynamically shifts buttons, badges, active tabs, and highlights across the entire ERP.
+                </p>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {BRAND_TINTS.map((t) => {
                 const isSelected = brandTint === t.hex;
@@ -421,20 +429,52 @@ export const SettingsPage: React.FC = () => {
                     key={t.hex}
                     type="button"
                     onClick={() => setBrandTint(t.hex)}
-                    className={`p-3 rounded-xl border flex items-center justify-between text-xs transition-all cursor-pointer ${
+                    className={`p-3.5 rounded-xl border flex items-center justify-between text-xs transition-all cursor-pointer ${
                       isSelected
-                        ? 'border-slate-900 dark:border-white shadow-xs'
-                        : 'border-slate-200 dark:border-slate-800'
+                        ? 'border-2 border-sky-500 bg-sky-50/70 dark:bg-sky-950/40 ring-2 ring-sky-500/20 shadow-sm'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800/40'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-5 h-5 rounded-full shadow-inner" style={{ backgroundColor: t.hex }}></div>
-                      <span className="font-semibold text-slate-900 dark:text-white">{t.name}</span>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-6 h-6 rounded-full shadow-md ring-2 ring-white dark:ring-slate-900 shrink-0"
+                        style={{ backgroundColor: t.hex }}
+                      ></div>
+                      <div className="text-left">
+                        <span className="font-bold text-slate-900 dark:text-white block">{t.name}</span>
+                        <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 uppercase">{t.hex}</span>
+                      </div>
                     </div>
-                    {isSelected && <Check className="w-4 h-4 text-sky-600 dark:text-sky-400" />}
+                    {isSelected && (
+                      <div className="w-5 h-5 rounded-full bg-sky-500 text-white flex items-center justify-center">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </div>
+                    )}
                   </button>
                 );
               })}
+            </div>
+
+            {/* Live Accent Preview Box */}
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                Live Brand Accent Preview
+              </span>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-sm transition-all"
+                >
+                  Primary Action Button
+                </button>
+                <div className="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400 border border-sky-200 dark:border-sky-800 font-semibold text-xs flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-sky-500"></span>
+                  <span>Active Navigation Tag</span>
+                </div>
+                <div className="px-2.5 py-1 rounded-lg border border-sky-500 text-sky-600 dark:text-sky-400 font-bold text-xs">
+                  Outline Highlight
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -185,30 +185,30 @@ export const DashboardPage: React.FC = () => {
     <div className="space-y-6">
       {/* Clean Tenant Workspace Welcome Banner */}
       {isCleanTenant && (
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-500/10 via-cyan-500/10 to-transparent border border-sky-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="p-4 rounded-2xl bg-sky-50/80 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-white text-sm">
+              <h3 className="font-bold text-slate-900 dark:text-white text-sm">
                 Clean Isolated Workspace: {user?.plantName || 'New Plant'}
               </h3>
-              <p className="text-slate-400">
-                Logged in as <span className="text-white font-medium">{user?.fullName}</span>. All customer accounts, routes, and billing operate independently in this workspace.
+              <p className="text-slate-600 dark:text-slate-400 mt-0.5">
+                Logged in as <span className="text-slate-900 dark:text-white font-semibold">{user?.fullName}</span>. All customer accounts, routes, and billing operate independently in this workspace.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => navigate('/customers')}
-              className="px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow-xs transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
             >
               + Register Customer
             </button>
             <button
               onClick={() => navigate('/settings')}
-              className="px-3.5 py-1.5 rounded-xl border border-slate-700 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs transition-colors cursor-pointer bg-white dark:bg-transparent"
             >
               Configure Plant Pricing
             </button>
@@ -217,22 +217,22 @@ export const DashboardPage: React.FC = () => {
       )}
 
       {/* Top Banner & Quick Actions */}
-      <div className="glass-panel rounded-2xl p-6 bg-gradient-to-r from-sky-900 to-slate-900 text-white relative overflow-hidden">
+      <div className="glass-panel rounded-2xl p-6 bg-white dark:bg-gradient-to-r dark:from-slate-900 dark:via-sky-950 dark:to-slate-900 border border-slate-200/90 dark:border-slate-800 relative overflow-hidden shadow-xs">
         <div className="absolute right-0 top-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 text-xs font-semibold border border-sky-400/30">
+              <span className="px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200 dark:bg-sky-500/20 dark:text-sky-300 dark:border-sky-400/30 text-xs font-semibold">
                 Shift: Morning (07:00 - 15:00)
               </span>
-              <span className="text-slate-400 text-xs">
+              <span className="text-slate-500 dark:text-slate-400 text-xs font-medium">
                 {isCleanTenant ? 'Independent Workspace Node' : 'Live Telemetry Active'}
               </span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
               Operations Hub — {user?.plantName || 'Karachi Plant #4'}
             </h1>
-            <p className="text-sm text-slate-300 max-w-2xl">
+            <p className="text-sm text-slate-600 dark:text-slate-300 max-w-2xl font-normal">
               Real-time monitoring of delivery runs, returnable bottle circulation, and route cash handovers across Karachi municipal sectors.
             </p>
           </div>
@@ -240,16 +240,16 @@ export const DashboardPage: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => navigate('/routes')}
-              className="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-sky-500/20 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-sm shadow-sky-600/20 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Create Route Run</span>
             </button>
             <button
               onClick={() => navigate('/customers')}
-              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer backdrop-blur-xs"
+              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white border border-slate-200 dark:border-white/20 font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer backdrop-blur-xs"
             >
-              <Share2 className="w-4 h-4 text-sky-400" />
+              <Share2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
               <span>Generate Sign-up Link</span>
             </button>
           </div>
