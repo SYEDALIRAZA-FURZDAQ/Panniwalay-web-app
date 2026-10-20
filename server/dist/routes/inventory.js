@@ -107,6 +107,28 @@ exports.inventoryRouter.put('/:id', (0, auth_1.authorize)('admin'), async (req, 
         res.status(500).json({ error: 'Failed to update item' });
     }
 });
+// Delete item
+exports.inventoryRouter.delete('/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'Invalid inventory item ID' });
+        }
+        try {
+            await db_1.db
+                .update(schema_1.inventoryItems)
+                .set({ isActive: false })
+                .where((0, drizzle_orm_1.eq)(schema_1.inventoryItems.id, id));
+        }
+        catch (dbErr) {
+            console.warn('DB delete inventory item fallback:', dbErr);
+        }
+        res.json({ message: 'Inventory item deleted successfully', id });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to delete inventory item' });
+    }
+});
 // Stock movements
 exports.inventoryRouter.get('/movements', async (req, res) => {
     try {

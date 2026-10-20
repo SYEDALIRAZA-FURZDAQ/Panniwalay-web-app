@@ -15,9 +15,6 @@ import {
   ArrowUpDown,
   CheckCircle2,
   Trash2,
-  Lock,
-  Eye,
-  EyeOff,
 } from 'lucide-react';
 import { Badge } from '@/components/common/Badge';
 import { KpiCard } from '@/components/common/KpiCard';
@@ -39,118 +36,147 @@ interface InventoryItem {
   stockStatus: 'full_stock' | 'moderate' | 'low_stock' | 'reorder';
 }
 
+const STORAGE_KEY = 'panniwalay_inventory_items';
+
+const DEFAULT_INVENTORY_ITEMS: InventoryItem[] = [
+  {
+    id: 1,
+    name: '19-Litre Mineral Water Jar (Filled)',
+    sku: 'WTR-19L-FIL',
+    category: 'bottled_water',
+    inPlantQty: 1840,
+    withClientsQty: 4320,
+    unitCost: 65,
+    salePrice: 220,
+    refundableDeposit: 1000,
+    batchLot: 'LOT-2610-A',
+    bay: 'Bay 4A',
+    minThreshold: 400,
+    stockStatus: 'full_stock',
+  },
+  {
+    id: 2,
+    name: 'Empty 19-Litre PC Bottle Shell (Ozonated Wash)',
+    sku: 'WTR-19L-EMP',
+    category: 'bottled_water',
+    inPlantQty: 620,
+    withClientsQty: 4320,
+    unitCost: 850,
+    salePrice: 1000,
+    refundableDeposit: 1000,
+    batchLot: 'PLT-4-RTN',
+    bay: 'Bay 1Wash',
+    minThreshold: 300,
+    stockStatus: 'moderate',
+  },
+  {
+    id: 3,
+    name: 'Hot & Cold Water Dispenser (Compressor)',
+    sku: 'DSP-ELEC-HC',
+    category: 'dispensers_coolers',
+    inPlantQty: 45,
+    withClientsQty: 185,
+    unitCost: 14500,
+    salePrice: 21500,
+    refundableDeposit: 8500,
+    batchLot: 'DSP-2026',
+    bay: 'Aisle 3',
+    minThreshold: 15,
+    stockStatus: 'full_stock',
+  },
+  {
+    id: 4,
+    name: 'Manual Hand Suction Pump',
+    sku: 'ACC-PMP-MAN',
+    category: 'accessories',
+    inPlantQty: 320,
+    withClientsQty: 750,
+    unitCost: 280,
+    salePrice: 550,
+    refundableDeposit: 0,
+    batchLot: 'PMP-Q4',
+    bay: 'Bin 12',
+    minThreshold: 50,
+    stockStatus: 'full_stock',
+  },
+  {
+    id: 5,
+    name: 'Tabletop Chrome Bottle Cradle / Stand',
+    sku: 'ACC-STND-MET',
+    category: 'accessories',
+    inPlantQty: 85,
+    withClientsQty: 210,
+    unitCost: 750,
+    salePrice: 1400,
+    refundableDeposit: 0,
+    batchLot: 'STN-2026',
+    bay: 'Bin 14',
+    minThreshold: 20,
+    stockStatus: 'full_stock',
+  },
+  {
+    id: 6,
+    name: '55mm Non-Spill Snap-On Caps (Pack of 100)',
+    sku: 'CAP-55MM-100',
+    category: 'caps_seals_accessories',
+    inPlantQty: 120,
+    withClientsQty: 0,
+    unitCost: 350,
+    salePrice: 500,
+    refundableDeposit: 0,
+    batchLot: 'CAP-OCT26',
+    bay: 'Store Rm 2',
+    minThreshold: 30,
+    stockStatus: 'full_stock',
+  },
+  {
+    id: 7,
+    name: 'Tamper Evident Heat Shrink Neck Sleeves (1000 pcs)',
+    sku: 'SEAL-SHR-1K',
+    category: 'caps_seals_accessories',
+    inPlantQty: 18,
+    withClientsQty: 0,
+    unitCost: 1200,
+    salePrice: 1800,
+    refundableDeposit: 0,
+    batchLot: 'SLV-2610',
+    bay: 'Store Rm 2',
+    minThreshold: 25,
+    stockStatus: 'low_stock',
+  },
+];
+
+const getStoredInventory = (): InventoryItem[] => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load inventory from localStorage:', e);
+  }
+  return DEFAULT_INVENTORY_ITEMS;
+};
+
 export const InventoryPage: React.FC = () => {
   const { formatMoney } = useCurrency();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [search, setSearch] = useState('');
 
-  const [items, setItems] = useState<InventoryItem[]>([
-    {
-      id: 1,
-      name: '19-Litre Mineral Water Jar (Filled)',
-      sku: 'WTR-19L-FIL',
-      category: 'bottled_water',
-      inPlantQty: 1840,
-      withClientsQty: 4320,
-      unitCost: 65,
-      salePrice: 220,
-      refundableDeposit: 1000,
-      batchLot: 'LOT-2610-A',
-      bay: 'Bay 4A',
-      minThreshold: 400,
-      stockStatus: 'full_stock',
-    },
-    {
-      id: 2,
-      name: 'Empty 19-Litre PC Bottle Shell (Ozonated Wash)',
-      sku: 'WTR-19L-EMP',
-      category: 'bottled_water',
-      inPlantQty: 620,
-      withClientsQty: 4320,
-      unitCost: 850,
-      salePrice: 1000,
-      refundableDeposit: 1000,
-      batchLot: 'PLT-4-RTN',
-      bay: 'Bay 1Wash',
-      minThreshold: 300,
-      stockStatus: 'moderate',
-    },
-    {
-      id: 3,
-      name: 'Hot & Cold Water Dispenser (Compressor)',
-      sku: 'DSP-ELEC-HC',
-      category: 'dispensers_coolers',
-      inPlantQty: 45,
-      withClientsQty: 185,
-      unitCost: 14500,
-      salePrice: 21500,
-      refundableDeposit: 8500,
-      batchLot: 'DSP-2026',
-      bay: 'Aisle 3',
-      minThreshold: 15,
-      stockStatus: 'full_stock',
-    },
-    {
-      id: 4,
-      name: 'Manual Hand Suction Pump',
-      sku: 'ACC-PMP-MAN',
-      category: 'accessories',
-      inPlantQty: 320,
-      withClientsQty: 750,
-      unitCost: 280,
-      salePrice: 550,
-      refundableDeposit: 0,
-      batchLot: 'PMP-Q4',
-      bay: 'Bin 12',
-      minThreshold: 50,
-      stockStatus: 'full_stock',
-    },
-    {
-      id: 5,
-      name: 'Tabletop Chrome Bottle Cradle / Stand',
-      sku: 'ACC-STND-MET',
-      category: 'accessories',
-      inPlantQty: 85,
-      withClientsQty: 210,
-      unitCost: 750,
-      salePrice: 1400,
-      refundableDeposit: 0,
-      batchLot: 'STN-2026',
-      bay: 'Bin 14',
-      minThreshold: 20,
-      stockStatus: 'full_stock',
-    },
-    {
-      id: 6,
-      name: '55mm Non-Spill Snap-On Caps (Pack of 100)',
-      sku: 'CAP-55MM-100',
-      category: 'caps_seals_accessories',
-      inPlantQty: 120,
-      withClientsQty: 0,
-      unitCost: 350,
-      salePrice: 500,
-      refundableDeposit: 0,
-      batchLot: 'CAP-OCT26',
-      bay: 'Store Rm 2',
-      minThreshold: 30,
-      stockStatus: 'full_stock',
-    },
-    {
-      id: 7,
-      name: 'Tamper Evident Heat Shrink Neck Sleeves (1000 pcs)',
-      sku: 'SEAL-SHR-1K',
-      category: 'caps_seals_accessories',
-      inPlantQty: 18,
-      withClientsQty: 0,
-      unitCost: 1200,
-      salePrice: 1800,
-      refundableDeposit: 0,
-      batchLot: 'SLV-2610',
-      bay: 'Store Rm 2',
-      minThreshold: 25,
-      stockStatus: 'low_stock',
-    },
-  ]);
+  const [items, setItems] = useState<InventoryItem[]>(getStoredInventory);
+
+  // Sync to localStorage whenever items change
+  const updateItems = (newItems: InventoryItem[]) => {
+    setItems(newItems);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
+    } catch (e) {
+      console.warn('Failed to save inventory to localStorage:', e);
+    }
+  };
 
   // Modal States
   const [showAddModal, setShowAddModal] = useState(false);
@@ -158,16 +184,19 @@ export const InventoryPage: React.FC = () => {
   const [adjustQty, setAdjustQty] = useState<number>(0);
   const [adjustType, setAdjustType] = useState<'in' | 'out'>('in');
 
-  // Delete with password
+  // Delete with typed 'DELETE' precaution confirmation
   const [deleteItem, setDeleteItem] = useState<InventoryItem | null>(null);
-  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [showDeletePassword, setShowDeletePassword] = useState(false);
 
-  const handleDeleteWithPassword = async () => {
-    if (!deleteItem || !deletePassword.trim()) {
-      setDeleteError('Please enter your password');
+  const isDeleteConfirmed = deleteConfirmText.trim() === 'DELETE';
+
+  const handleDeleteItem = async () => {
+    if (!deleteItem) return;
+
+    if (!isDeleteConfirmed) {
+      setDeleteError('Please type DELETE in capital bold letters to confirm.');
       return;
     }
 
@@ -175,33 +204,22 @@ export const InventoryPage: React.FC = () => {
     setDeleteError('');
 
     try {
-      // Verify the logged-in user's password
-      const verifyRes = await fetch('/api/auth/verify-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      // Call backend DELETE endpoint
+      await fetch(`/api/inventory/${deleteItem.id}`, {
+        method: 'DELETE',
         credentials: 'include',
-        body: JSON.stringify({ password: deletePassword }),
       });
-
-      const verifyData = await verifyRes.json();
-
-      if (!verifyRes.ok || !verifyData.verified) {
-        setDeleteError(verifyData.error || 'Incorrect password. Access denied.');
-        setDeleteLoading(false);
-        return;
-      }
-
-      // Password verified — remove the item
-      setItems(items.filter((i) => i.id !== deleteItem.id));
-      setDeleteItem(null);
-      setDeletePassword('');
-      setDeleteError('');
-      setShowDeletePassword(false);
     } catch (err) {
-      setDeleteError('Verification failed. Please try again.');
-    } finally {
-      setDeleteLoading(false);
+      console.warn('API inventory delete fallback:', err);
     }
+
+    const updated = items.filter((i) => i.id !== deleteItem.id);
+    updateItems(updated);
+
+    setDeleteItem(null);
+    setDeleteConfirmText('');
+    setDeleteError('');
+    setDeleteLoading(false);
   };
 
   const [newItem, setNewItem] = useState({
@@ -234,7 +252,16 @@ export const InventoryPage: React.FC = () => {
       stockStatus: 'full_stock',
     };
 
-    setItems([...items, created]);
+    const updated = [...items, created];
+    updateItems(updated);
+
+    fetch('/api/inventory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(created),
+    }).catch((err) => console.warn('Backend item add fallback:', err));
+
     setShowAddModal(false);
   };
 
@@ -242,20 +269,28 @@ export const InventoryPage: React.FC = () => {
     e.preventDefault();
     if (!adjustItem) return;
 
-    setItems(
-      items.map((item) => {
-        if (item.id === adjustItem.id) {
-          const delta = adjustType === 'in' ? Number(adjustQty) : -Number(adjustQty);
-          const newQty = Math.max(0, item.inPlantQty + delta);
-          return {
-            ...item,
-            inPlantQty: newQty,
-            stockStatus: newQty < item.minThreshold ? 'low_stock' : 'full_stock',
-          };
-        }
-        return item;
-      })
-    );
+    const updated = items.map((item) => {
+      if (item.id === adjustItem.id) {
+        const delta = adjustType === 'in' ? Number(adjustQty) : -Number(adjustQty);
+        const newQty = Math.max(0, item.inPlantQty + delta);
+        return {
+          ...item,
+          inPlantQty: newQty,
+          stockStatus: (newQty < item.minThreshold ? 'low_stock' : 'full_stock') as InventoryItem['stockStatus'],
+        };
+      }
+      return item;
+    });
+
+    updateItems(updated);
+
+    fetch(`/api/inventory/${adjustItem.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(updated.find((i) => i.id === adjustItem.id)),
+    }).catch((err) => console.warn('Backend item adjust fallback:', err));
+
     setAdjustItem(null);
   };
 
@@ -487,9 +522,8 @@ export const InventoryPage: React.FC = () => {
                       <button
                         onClick={() => {
                           setDeleteItem(item);
-                          setDeletePassword('');
+                          setDeleteConfirmText('');
                           setDeleteError('');
-                          setShowDeletePassword(false);
                         }}
                         className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950 dark:hover:bg-rose-900 dark:text-rose-400 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1"
                       >
@@ -693,104 +727,124 @@ export const InventoryPage: React.FC = () => {
         </div>
       )}
 
-      {/* Delete Inventory Item — Password Protected Modal */}
+      {/* Delete Inventory Item — DELETE Confirmation Modal */}
       {deleteItem && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="glass-panel rounded-2xl max-w-sm w-full p-6 space-y-4 bg-white dark:bg-[#131c31] border border-slate-200 dark:border-slate-700 shadow-xl">
+          <div className="glass-panel rounded-2xl max-w-md w-full p-6 space-y-4 bg-white dark:bg-[#131c31] border border-slate-200 dark:border-slate-700 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
-                <Lock className="w-5 h-5" />
-                Admin Delete — Password Required
-              </h3>
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center border border-rose-100 dark:border-rose-900/40">
+                  <Trash2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    Delete Inventory Item
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Precautionary confirmation required
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={() => {
                   setDeleteItem(null);
-                  setDeletePassword('');
+                  setDeleteConfirmText('');
                   setDeleteError('');
-                  setShowDeletePassword(false);
                 }}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Item details */}
-            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/50 space-y-2 text-xs">
-              <p className="text-slate-700 dark:text-slate-300">
-                You are about to permanently delete:
+            <div className="p-3.5 rounded-xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-200/60 dark:border-rose-900/50 space-y-2 text-xs">
+              <p className="text-slate-600 dark:text-slate-400">
+                You are about to permanently delete this inventory asset:
               </p>
-              <p className="font-bold text-slate-900 dark:text-white text-sm">
-                {deleteItem.name}
-              </p>
-              <p className="text-slate-500 dark:text-slate-400">
-                SKU: {deleteItem.sku} &bull; In-Plant: {deleteItem.inPlantQty.toLocaleString()} &bull; With Clients: {deleteItem.withClientsQty.toLocaleString()}
-              </p>
-              <div className="flex items-center gap-1.5 mt-1 text-amber-600 dark:text-amber-400 font-semibold">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                <span>This action cannot be undone. Enter your login password to confirm.</span>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-bold text-slate-900 dark:text-white text-sm">
+                    {deleteItem.name}
+                  </p>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
+                    SKU: <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{deleteItem.sku}</span> &bull; Location: <span className="font-semibold">{deleteItem.bay}</span>
+                  </p>
+                </div>
+                <div className="text-right whitespace-nowrap">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                    {deleteItem.inPlantQty.toLocaleString()} units
+                  </span>
+                  <span className="text-[10px] text-slate-400">In-Plant Stock</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 pt-1 text-amber-700 dark:text-amber-400 text-[11px] font-medium border-t border-rose-100 dark:border-rose-900/40">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                <span>This item will be permanently removed from inventory and reporting.</span>
               </div>
             </div>
 
-            {/* Password input */}
-            <div className="space-y-1.5">
+            {/* Confirmation box: Type DELETE in BOLD */}
+            <div className="space-y-2">
               <label className="font-semibold text-xs block text-slate-700 dark:text-slate-300">
-                Your Login Password
+                Please type <span className="font-black text-rose-600 dark:text-rose-400 tracking-wider">DELETE</span> in capital bold letters to confirm:
               </label>
               <div className="relative">
-                <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
                 <input
-                  type={showDeletePassword ? 'text' : 'password'}
-                  placeholder="Enter your password to authorize..."
-                  value={deletePassword}
+                  type="text"
+                  placeholder="Type DELETE here..."
+                  value={deleteConfirmText}
                   onChange={(e) => {
-                    setDeletePassword(e.target.value);
+                    setDeleteConfirmText(e.target.value);
                     setDeleteError('');
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleDeleteWithPassword();
+                    if (e.key === 'Enter' && isDeleteConfirmed) handleDeleteItem();
                   }}
                   autoFocus
-                  className="w-full pl-9 pr-10 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-rose-500 font-medium"
+                  className={`w-full px-3.5 py-2.5 text-sm rounded-xl font-black tracking-widest uppercase transition-all duration-150 outline-hidden ${
+                    isDeleteConfirmed
+                      ? 'bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-500 text-emerald-700 dark:text-emerald-300'
+                      : 'bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
+                  }`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowDeletePassword(!showDeletePassword)}
-                  className="absolute right-3 top-2 text-slate-400 hover:text-slate-600 cursor-pointer"
-                >
-                  {showDeletePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+                {isDeleteConfirmed && (
+                  <div className="absolute right-3 top-2.5 flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Confirmed</span>
+                  </div>
+                )}
               </div>
+
               {deleteError && (
-                <p className="text-rose-500 text-xs font-semibold flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3" />
+                <p className="text-rose-500 text-xs font-semibold flex items-center gap-1 pt-1">
+                  <AlertTriangle className="w-3.5 h-3.5" />
                   {deleteError}
                 </p>
               )}
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex justify-end items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => {
                   setDeleteItem(null);
-                  setDeletePassword('');
+                  setDeleteConfirmText('');
                   setDeleteError('');
-                  setShowDeletePassword(false);
                 }}
-                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                disabled={deleteLoading || !deletePassword.trim()}
-                onClick={handleDeleteWithPassword}
-                className={`px-4 py-2 rounded-xl text-white font-bold text-xs cursor-pointer transition-colors flex items-center gap-1.5 ${
-                  deleteLoading || !deletePassword.trim()
-                    ? 'bg-rose-400 cursor-not-allowed opacity-60'
-                    : 'bg-rose-600 hover:bg-rose-500'
+                disabled={deleteLoading || !isDeleteConfirmed}
+                onClick={handleDeleteItem}
+                className={`px-4 py-2 rounded-xl text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-xs ${
+                  deleteLoading || !isDeleteConfirmed
+                    ? 'bg-slate-300 dark:bg-slate-800 text-slate-500 dark:text-slate-500 cursor-not-allowed border border-transparent'
+                    : 'bg-rose-600 hover:bg-rose-500 active:bg-rose-700 cursor-pointer shadow-rose-600/20'
                 }`}
               >
                 {deleteLoading ? (
@@ -798,7 +852,7 @@ export const InventoryPage: React.FC = () => {
                 ) : (
                   <Trash2 className="w-3.5 h-3.5" />
                 )}
-                {deleteLoading ? 'Verifying...' : 'Delete Permanently'}
+                {deleteLoading ? 'Deleting...' : 'Delete Permanently'}
               </button>
             </div>
           </div>

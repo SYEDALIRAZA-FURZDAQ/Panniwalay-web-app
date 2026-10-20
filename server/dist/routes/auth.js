@@ -333,6 +333,57 @@ exports.authRouter.post('/logout', auth_1.authenticate, async (req, res) => {
         res.json({ message: 'Logged out' });
     }
 });
+// ─── VERIFY PASSWORD (for sensitive actions) ────────────────────────
+exports.authRouter.post('/verify-password', auth_1.authenticate, async (req, res) => {
+    try {
+        const { password } = req.body;
+        if (!password) {
+            return res.status(400).json({ error: 'Password is required', verified: false });
+        }
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ error: 'Not authenticated', verified: false });
+        }
+        // Check in-memory users first
+        let matchedUser = inMemoryUsers.find((u) => u.id === userId && u.isActive);
+        // Check DB if not in memory
+        if (!matchedUser) {
+            try {
+                const [dbUser] = await db_1.db
+                    .select({ id: schema_1.users.id, passwordHash: schema_1.users.passwordHash, isActive: schema_1.users.isActive })
+                    .from(schema_1.users)
+                    .where((0, drizzle_orm_1.eq)(schema_1.users.id, userId))
+                    .limit(1);
+                if (dbUser && dbUser.isActive) {
+                    matchedUser = { passwordHash: dbUser.passwordHash };
+                }
+            }
+            catch (dbErr) {
+                console.warn('DB lookup during verify-password:', dbErr);
+            }
+        }
+        if (!matchedUser) {
+            return res.status(401).json({ error: 'User not found', verified: false });
+        }
+        let isValid = false;
+        try {
+            isValid = await bcryptjs_1.default.compare(password, matchedUser.passwordHash);
+        }
+        catch (e) {
+            // Fallback for demo account
+            if (password === 'Admin@123' && userId === 1) {
+                isValid = true;
+            }
+        }
+        if (!isValid) {
+            return res.status(403).json({ error: 'Incorrect password', verified: false });
+        }
+        res.json({ verified: true, message: 'Password verified successfully' });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Verification failed', verified: false });
+    }
+});
 // ─── GET CURRENT USER ───────────────────────────────────────────────
 exports.authRouter.get('/me', auth_1.authenticate, async (req, res) => {
     res.json({ user: req.user });

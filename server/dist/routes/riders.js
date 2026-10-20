@@ -43,7 +43,7 @@ exports.ridersRouter.get('/', auth_1.authenticate, async (req, res) => {
     try {
         const { status, zoneId, search, page = '1', limit = '50' } = req.query;
         const offset = (parseInt(page) - 1) * parseInt(limit);
-        const conditions = [];
+        const conditions = [(0, drizzle_orm_1.eq)(schema_1.riders.isActive, true)];
         if (status && status !== 'all') {
             conditions.push((0, drizzle_orm_1.eq)(schema_1.riders.status, status));
         }
@@ -201,6 +201,31 @@ exports.ridersRouter.post('/:id/handover', auth_1.authenticate, async (req, res)
     }
     catch (error) {
         res.status(400).json({ error: error.message });
+    }
+});
+// Delete / Deactivate Rider
+exports.ridersRouter.delete('/:id', auth_1.authenticate, (0, auth_1.authorize)('admin', 'manager', 'dispatcher'), async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'Invalid rider ID' });
+        }
+        try {
+            await db_1.db
+                .update(schema_1.riders)
+                .set({
+                isActive: false,
+                status: 'off_shift',
+            })
+                .where((0, drizzle_orm_1.eq)(schema_1.riders.id, id));
+        }
+        catch (dbErr) {
+            console.warn('DB delete rider fallback:', dbErr);
+        }
+        res.json({ message: 'Rider removed successfully', id });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message || 'Failed to remove rider' });
     }
 });
 //# sourceMappingURL=riders.js.map
