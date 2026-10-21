@@ -23,6 +23,7 @@ const dashboard_1 = require("./routes/dashboard");
 const invites_1 = require("./routes/invites");
 const onboarding_1 = require("./routes/onboarding");
 const zones_1 = require("./routes/zones");
+const db_1 = require("./db");
 exports.logger = (0, pino_1.default)({
     transport: process.env.NODE_ENV === 'development'
         ? { target: 'pino-pretty', options: { colorize: true } }
@@ -68,8 +69,27 @@ app.use('/api/invites', invites_1.invitesRouter);
 app.use('/api/onboarding', onboarding_1.onboardingRouter);
 app.use('/api/zones', zones_1.zonesRouter);
 // Health check
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString(), app: 'Panniwalay ERP' });
+app.get('/', (_req, res) => {
+    res.json({ app: 'Panniwalay ERP', health: '/api/health' });
+});
+app.get('/api/health', async (_req, res) => {
+    try {
+        await db_1.pool.query('SELECT 1');
+        res.json({
+            status: 'ok',
+            database: 'connected',
+            timestamp: new Date().toISOString(),
+            app: 'Panniwalay ERP',
+        });
+    }
+    catch (error) {
+        exports.logger.error({ err: error }, 'Database health check failed');
+        res.status(503).json({
+            status: 'error',
+            database: 'unavailable',
+            app: 'Panniwalay ERP',
+        });
+    }
 });
 // Error handler
 app.use((err, req, res, next) => {
