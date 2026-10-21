@@ -1,4 +1,11 @@
-# Panniwalay ERP — REST API Documentation
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://YOUR-RENDER-SERVICE.onrender.com/api/:path*"
+    }
+  ]
+}# Panniwalay ERP — REST API Documentation
 
 Base URL: `http://localhost:3001/api` (Development) or `https://erp.panniwalay.pk/api` (Production)
 

@@ -90,13 +90,14 @@ exports.onboardingRouter.get('/verify', async (req, res) => {
                 .where((0, drizzle_orm_1.eq)(schema_1.customerInvites.tokenHash, tokenHash));
             if (invite) {
                 const inviteTenant = invite.createdById && invite.createdById !== 1 ? `tenant_${invite.createdById}` : targetTenantId;
+                const formattedZoneName = invite.zoneName ? `${invite.zoneName} (${invite.zoneCode || ''})`.trim() : undefined;
                 return res.json({
                     valid: true,
                     tenantId: inviteTenant,
                     createdById: invite.createdById || 1,
                     adminName: targetAdminName,
-                    preassignedZoneId: invite.preassignedZoneId || 1,
-                    zoneName: invite.zoneName || 'Clifton & Sea View (Z-01)',
+                    preassignedZoneId: invite.preassignedZoneId || undefined,
+                    zoneName: formattedZoneName,
                     preassignedCategory: invite.preassignedCategory || 'residential',
                     preassignedJarQuota: invite.preassignedJarQuota || 2,
                     standardDepositPerJar,
@@ -113,8 +114,8 @@ exports.onboardingRouter.get('/verify', async (req, res) => {
             tenantId: targetTenantId,
             createdById: targetCreatedById,
             adminName: targetAdminName,
-            preassignedZoneId: 1,
-            zoneName: 'Clifton & Sea View (Z-01)',
+            preassignedZoneId: undefined,
+            zoneName: undefined,
             preassignedCategory: 'residential',
             preassignedJarQuota: 2,
             standardDepositPerJar,
@@ -133,8 +134,8 @@ exports.onboardingRouter.get('/verify', async (req, res) => {
         res.json({
             valid: true,
             tenantId: req.query?.tenant || 'plant_default',
-            preassignedZoneId: 1,
-            zoneName: 'Clifton & Sea View (Z-01)',
+            preassignedZoneId: undefined,
+            zoneName: undefined,
             preassignedCategory: 'residential',
             preassignedJarQuota: 2,
             standardDepositPerJar,
@@ -217,7 +218,7 @@ exports.onboardingRouter.post('/register', async (req, res) => {
                 }
             }
             catch (e) {
-                console.warn('Zone lookup error:', e);
+                console.warn('Zone name lookup error:', e);
             }
         }
         if (!resolvedZoneName) {
@@ -228,6 +229,8 @@ exports.onboardingRouter.post('/register', async (req, res) => {
         const customerCode = `CUST-KHI-${randomSuffix}`;
         let customerId = Date.now();
         // ONLY insert into shared MySQL customers table if tenant is plant_default!
+        // Non-default tenants (such as Mohib Hyder, tenant_3) are private to that admin
+        // and must not appear in the default admin's shared customer list.
         if (targetTenantId === 'plant_default') {
             try {
                 const [insertResult] = await db_1.db.insert(schema_1.customers).values({

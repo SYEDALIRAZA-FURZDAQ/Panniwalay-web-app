@@ -1,8 +1,13 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.inMemoryCustomers = exports.customersRouter = void 0;
 exports.addCustomerRecord = addCustomerRecord;
 const express_1 = require("express");
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 const db_1 = require("../db");
 const schema_1 = require("../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
@@ -11,6 +16,7 @@ const zod_1 = require("zod");
 const fast_csv_1 = require("fast-csv");
 exports.customersRouter = (0, express_1.Router)();
 exports.customersRouter.use(auth_1.authenticate);
+const ISOLATED_STORE_PATH = path_1.default.join(__dirname, '../../isolated_customers.json');
 // Initial in-memory cache/fallback for Karachi customers
 exports.inMemoryCustomers = [
     {
@@ -109,14 +115,10 @@ exports.inMemoryCustomers = [
         createdById: 1,
     },
 ];
-const fs = require('fs');
-const path = require('path');
-const ISOLATED_STORE_PATH = path.join(__dirname, '../../isolated_customers.json');
-
 // Load any previously persisted isolated tenant customers from disk
 try {
-    if (fs.existsSync(ISOLATED_STORE_PATH)) {
-        const raw = fs.readFileSync(ISOLATED_STORE_PATH, 'utf-8');
+    if (fs_1.default.existsSync(ISOLATED_STORE_PATH)) {
+        const raw = fs_1.default.readFileSync(ISOLATED_STORE_PATH, 'utf-8');
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
             for (const item of parsed) {
@@ -130,7 +132,6 @@ try {
 catch (e) {
     console.warn('Failed to load persisted isolated customers:', e);
 }
-
 // Known test codes created under isolated tenants to prevent them from showing in plant_default
 const KNOWN_ISOLATED_CODES = new Set([
     'CUST-KHI-9981', // Ali (Ancholi)
@@ -141,7 +142,6 @@ const KNOWN_ISOLATED_CODES = new Set([
     'CUST-KHI-9363',
     'CUST-KHI-5367',
 ]);
-
 // Ensure Ali (Ancholi) is in inMemoryCustomers tagged as tenant_3 with correct zone
 if (!exports.inMemoryCustomers.some(c => c.customerCode === 'CUST-KHI-9981')) {
     exports.inMemoryCustomers.unshift({
@@ -165,7 +165,6 @@ if (!exports.inMemoryCustomers.some(c => c.customerCode === 'CUST-KHI-9981')) {
         createdAt: new Date().toISOString(),
     });
 }
-
 function addCustomerRecord(customer) {
     const existingIdx = exports.inMemoryCustomers.findIndex(c => c.customerCode === customer.customerCode);
     if (existingIdx >= 0) {
@@ -177,7 +176,7 @@ function addCustomerRecord(customer) {
     // Persist isolated customers so they survive server restarts
     try {
         const isolated = exports.inMemoryCustomers.filter(c => c.tenantId && c.tenantId !== 'plant_default');
-        fs.writeFileSync(ISOLATED_STORE_PATH, JSON.stringify(isolated, null, 2), 'utf-8');
+        fs_1.default.writeFileSync(ISOLATED_STORE_PATH, JSON.stringify(isolated, null, 2), 'utf-8');
     }
     catch (e) {
         console.warn('Failed to persist isolated customers:', e);
@@ -255,33 +254,33 @@ exports.customersRouter.get('/', async (req, res) => {
             .where((0, drizzle_orm_1.and)(...conditions));
         const data = await db_1.db
             .select({
-                id: schema_1.customers.id,
-                customerCode: schema_1.customers.customerCode,
-                fullName: schema_1.customers.fullName,
-                phone: schema_1.customers.phone,
-                email: schema_1.customers.email,
-                type: schema_1.customers.type,
-                zoneId: schema_1.customers.zoneId,
-                routeId: schema_1.customers.routeId,
-                jarQuota: schema_1.customers.jarQuota,
-                jarsInCirculation: schema_1.customers.jarsInCirculation,
-                depositHeld: schema_1.customers.depositHeld,
-                refillCycle: schema_1.customers.refillCycle,
-                status: schema_1.customers.status,
-                address: schema_1.customers.address,
-                landmark: schema_1.customers.landmark,
-                deliveryNote: schema_1.customers.deliveryNote,
-                isActive: schema_1.customers.isActive,
-                createdAt: schema_1.customers.createdAt,
-                updatedAt: schema_1.customers.updatedAt,
-                zoneName: (0, drizzle_orm_1.sql)`COALESCE(CONCAT(${schema_1.zones.name}, ' (', ${schema_1.zones.code}, ')'), 'Karachi Central')`,
-            })
+            id: schema_1.customers.id,
+            customerCode: schema_1.customers.customerCode,
+            fullName: schema_1.customers.fullName,
+            phone: schema_1.customers.phone,
+            email: schema_1.customers.email,
+            type: schema_1.customers.type,
+            zoneId: schema_1.customers.zoneId,
+            routeId: schema_1.customers.routeId,
+            jarQuota: schema_1.customers.jarQuota,
+            jarsInCirculation: schema_1.customers.jarsInCirculation,
+            depositHeld: schema_1.customers.depositHeld,
+            refillCycle: schema_1.customers.refillCycle,
+            status: schema_1.customers.status,
+            address: schema_1.customers.address,
+            landmark: schema_1.customers.landmark,
+            deliveryNote: schema_1.customers.deliveryNote,
+            isActive: schema_1.customers.isActive,
+            createdAt: schema_1.customers.createdAt,
+            updatedAt: schema_1.customers.updatedAt,
+            zoneName: (0, drizzle_orm_1.sql) `COALESCE(CONCAT(${schema_1.zones.name}, ' (', ${schema_1.zones.code}, ')'), 'Karachi Central')`,
+        })
             .from(schema_1.customers)
             .leftJoin(schema_1.zones, (0, drizzle_orm_1.eq)(schema_1.customers.zoneId, schema_1.zones.id))
             .where((0, drizzle_orm_1.and)(...conditions))
             .limit(parseInt(limit))
             .offset(offset)
-            .orderBy((0, drizzle_orm_1.sql)`${schema_1.customers.createdAt} DESC`);
+            .orderBy((0, drizzle_orm_1.sql) `${schema_1.customers.createdAt} DESC`);
         // Collect all customer codes that belong to isolated tenants
         const isolatedCodes = new Set([
             ...Array.from(KNOWN_ISOLATED_CODES),

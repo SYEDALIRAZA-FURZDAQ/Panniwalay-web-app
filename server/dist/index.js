@@ -81,5 +81,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     exports.logger.info(`🚰 Panniwalay ERP Server running on port ${PORT}`);
 });
+// Server initialized with isolated tenant routing
 exports.default = app;
 //# sourceMappingURL=index.js.map

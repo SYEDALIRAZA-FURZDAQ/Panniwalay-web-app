@@ -4,6 +4,9 @@ import mysql from 'mysql2/promise';
 import * as schema from './schema';
 
 const pool = mysql.createPool({
+  ssl: process.env.DB_SSL_CA
+  ? { ca: process.env.DB_SSL_CA, rejectUnauthorized: true }
+  : undefined,
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '3306'),
   user: process.env.DB_USER || 'root',
