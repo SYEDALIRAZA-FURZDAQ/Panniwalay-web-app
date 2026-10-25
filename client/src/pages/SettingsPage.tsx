@@ -82,9 +82,21 @@ export const SettingsPage: React.FC = () => {
   const handleDeleteZone = async (id: number, name: string) => {
     if (!window.confirm(`Delete delivery zone "${name}"?`)) return;
     try {
-      await fetch(`/api/zones/${id}`, { method: 'DELETE' });
-    } catch (e) {}
-    setZonesList(zonesList.filter((z) => z.id !== id));
+      const token = localStorage.getItem('panniwalay_token');
+      const res = await fetch(`/api/zones/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Delete failed' }));
+        alert(`Failed to delete zone: ${data.error || res.statusText}`);
+        return;
+      }
+      setZonesList((currentZones) => currentZones.filter((zone) => zone.id !== id));
+    } catch {
+      alert('Network error: could not delete zone. Please try again.');
+    }
   };
 
   // Form State

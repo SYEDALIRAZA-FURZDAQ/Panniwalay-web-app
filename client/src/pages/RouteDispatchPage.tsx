@@ -386,6 +386,7 @@ export const RouteDispatchPage: React.FC = () => {
       await fetch('/api/routes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           runNumber: createdRun.runNumber,
           zoneId: createdRun.zoneId,
@@ -407,7 +408,7 @@ export const RouteDispatchPage: React.FC = () => {
       return;
     }
     try {
-      await fetch(`/api/routes/${id}`, { method: 'DELETE' });
+      await fetch(`/api/routes/${id}`, { method: 'DELETE', credentials: 'include' });
     } catch (err) {}
     setRuns(runs.filter((r) => r.id !== id));
   };
@@ -416,6 +417,7 @@ export const RouteDispatchPage: React.FC = () => {
     fetch(`/api/routes/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ status: nextStatus }),
     }).catch(() => {});
     setRuns(runs.map((r) => (r.id === id ? { ...r, status: nextStatus } : r)));
@@ -452,6 +454,7 @@ export const RouteDispatchPage: React.FC = () => {
       const res = await fetch('/api/routes/target-routes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           routeCode: createdRoute.routeCode,
           name: createdRoute.name,
@@ -494,7 +497,7 @@ export const RouteDispatchPage: React.FC = () => {
       return;
     }
     try {
-      await fetch(`/api/routes/target-routes/${id}`, { method: 'DELETE' });
+      await fetch(`/api/routes/target-routes/${id}`, { method: 'DELETE', credentials: 'include' });
     } catch (err) {}
     setTargetRoutesList(targetRoutesList.filter((r) => r.id !== id));
   };
@@ -551,6 +554,7 @@ export const RouteDispatchPage: React.FC = () => {
       const res = await fetch('/api/zones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(createdZone),
       });
       if (res.ok) {
@@ -575,9 +579,21 @@ export const RouteDispatchPage: React.FC = () => {
       return;
     }
     try {
-      await fetch(`/api/zones/${id}`, { method: 'DELETE' });
-    } catch (err) {}
-    setZonesList(zonesList.filter((z) => z.id !== id));
+      const token = localStorage.getItem('panniwalay_token');
+      const res = await fetch(`/api/zones/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: 'Delete failed' }));
+        alert(`Failed to delete zone: ${data.error || res.statusText}`);
+        return;
+      }
+      setZonesList(zonesList.filter((z) => z.id !== id));
+    } catch (err) {
+      alert('Network error: could not delete zone. Please try again.');
+    }
   };
 
   // Filtered runs
