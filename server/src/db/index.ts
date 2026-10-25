@@ -1,7 +1,10 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
 import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import * as schema from './schema';
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const pool = mysql.createPool({
   ssl: process.env.DB_SSL_CA

@@ -7,6 +7,7 @@ exports.logger = void 0;
 require("dotenv/config");
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const helmet_1 = __importDefault(require("helmet"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const pino_1 = __importDefault(require("pino"));
@@ -37,6 +38,7 @@ app.use((0, cors_1.default)({
     origin: process.env.CLIENT_URL || 'http://localhost:5173',
     credentials: true,
 }));
+app.use((0, cookie_parser_1.default)());
 // Rate limiting
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000,
